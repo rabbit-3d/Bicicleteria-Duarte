@@ -330,9 +330,11 @@ button.ghost:active{ color: var(--text); }
 }
 
 /* ---------- buscador ---------- */
+.search-sort-row{ display:flex; flex-direction:column; gap:10px; margin-bottom: 12px; }
 .search-box{
   position: relative;
-  margin-bottom: 12px;
+  margin-bottom: 0;
+  flex:1;
 }
 .search-box svg{
   position: absolute;
@@ -350,6 +352,24 @@ button.ghost:active{ color: var(--text); }
 .search-box input::-webkit-search-cancel-button{
   filter: invert(0.6);
 }
+.select-orden{
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  padding: 11px 12px;
+  font-family:'Inter', sans-serif;
+  font-size: 14px;
+  min-height: var(--tap);
+  width:100%;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239aa1a7' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 34px;
+}
+.select-orden:focus{ outline: 2px solid var(--amber); outline-offset: 1px; }
 
 /* ---------- sub-tabs (Inventario / Historial de ventas) ---------- */
 .subtabs{
@@ -674,6 +694,8 @@ nav.bottom-nav .inner{
   .stats-resumen{ grid-template-columns: repeat(4, 1fr); }
 
   .btn-nuevo{ width:auto; min-width: 230px; padding: 0 22px; margin-bottom: 18px; }
+  .search-sort-row{ flex-direction:row; align-items:center; }
+  .select-orden{ width:auto; min-width: 210px; flex-shrink:0; }
   .chart-wrap{ height: 260px; }
 }
 </style>
@@ -833,9 +855,19 @@ nav.bottom-nav .inner{
     </div>
 
     <div id="subvistaInventario" class="subview active">
-      <div class="search-box">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-        <input type="search" id="buscarProducto" placeholder="Buscar producto..." autocomplete="off" />
+      <div class="search-sort-row">
+        <div class="search-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <input type="search" id="buscarProducto" placeholder="Buscar producto..." autocomplete="off" />
+        </div>
+        <select id="ordenProductos" class="select-orden">
+          <option value="nombre-asc">Nombre (A-Z)</option>
+          <option value="nombre-desc">Nombre (Z-A)</option>
+          <option value="precio-asc">Precio (menor a mayor)</option>
+          <option value="precio-desc">Precio (mayor a menor)</option>
+          <option value="stock-asc">Stock (menor a mayor)</option>
+          <option value="stock-desc">Stock (mayor a menor)</option>
+        </select>
       </div>
 
       <div id="listaProductos" class="list"></div>
@@ -956,6 +988,7 @@ const state = {
   ventas: [],
   filtroTrabajos: "todos", // todos | pendiente | pagado
   busquedaProductos: "",
+  ordenProductos: "nombre-asc",
   periodoEstadisticas: "semana", // semana | mes | anio
 };
 
@@ -1360,6 +1393,25 @@ function renderEstadisticas() {
 }
 
 // ---------- render: productos ----------
+function ordenarProductos(lista, orden) {
+  const copia = [...lista];
+  switch (orden) {
+    case "nombre-desc":
+      return copia.sort((a, b) => b.nombre.localeCompare(a.nombre, "es"));
+    case "precio-asc":
+      return copia.sort((a, b) => Number(a.precio || 0) - Number(b.precio || 0));
+    case "precio-desc":
+      return copia.sort((a, b) => Number(b.precio || 0) - Number(a.precio || 0));
+    case "stock-asc":
+      return copia.sort((a, b) => Number(a.stock || 0) - Number(b.stock || 0));
+    case "stock-desc":
+      return copia.sort((a, b) => Number(b.stock || 0) - Number(a.stock || 0));
+    case "nombre-asc":
+    default:
+      return copia.sort((a, b) => a.nombre.localeCompare(b.nombre, "es"));
+  }
+}
+
 function renderProductos() {
   const cont = $("#listaProductos");
 
@@ -1369,11 +1421,13 @@ function renderProductos() {
   }
 
   const termino = normalizar(state.busquedaProductos);
-  const items = termino
+  let items = termino
     ? state.productos.filter(
         (p) => normalizar(p.nombre).includes(termino) || normalizar(p.descripcion).includes(termino)
       )
-    : state.productos;
+    : [...state.productos];
+
+  items = ordenarProductos(items, state.ordenProductos);
 
   if (items.length === 0) {
     cont.innerHTML = `<div class="empty">No se encontró ningún producto para "${escapeHtml(state.busquedaProductos)}".</div>`;
@@ -1487,6 +1541,11 @@ $$(".filters [data-filtro]").forEach((btn) => {
 // ---------- buscador de productos ----------
 $("#buscarProducto").addEventListener("input", (e) => {
   state.busquedaProductos = e.target.value;
+  renderProductos();
+});
+
+$("#ordenProductos").addEventListener("change", (e) => {
+  state.ordenProductos = e.target.value;
   renderProductos();
 });
 
