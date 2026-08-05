@@ -1033,7 +1033,7 @@ async function cargarTodo() {
 
 async function cargarTrabajos() {
   const { data, error } = await supabaseClient
-    .from("trabajos")
+    .from("elcoya_trabajos")
     .select("*")
     .order("fecha_ingreso", { ascending: false })
     .order("created_at", { ascending: false });
@@ -1046,7 +1046,7 @@ async function cargarTrabajos() {
 
 async function cargarProductos() {
   const { data, error } = await supabaseClient
-    .from("productos")
+    .from("elcoya_productos")
     .select("*")
     .order("nombre", { ascending: true });
   if (error) return mostrarError("Error cargando productos: " + error.message);
@@ -1056,7 +1056,7 @@ async function cargarProductos() {
 
 async function cargarVentas() {
   const { data, error } = await supabaseClient
-    .from("ventas")
+    .from("elcoya_ventas")
     .select("*")
     .order("fecha", { ascending: false })
     .order("created_at", { ascending: false })
@@ -1505,7 +1505,7 @@ $("#formTrabajo").addEventListener("submit", async (e) => {
   };
   if (!payload.cliente) return mostrarError("Falta el nombre del cliente.");
 
-  const { error } = await supabaseClient.from("trabajos").insert(payload);
+  const { error } = await supabaseClient.from("elcoya_trabajos").insert(payload);
   if (error) return mostrarError("No se pudo guardar el trabajo: " + error.message);
   form.reset();
   $("#formTrabajo").fecha_ingreso.value = new Date().toISOString().slice(0, 10);
@@ -1522,7 +1522,7 @@ $("#listaTrabajos").addEventListener("click", async (e) => {
 
   if (e.target.classList.contains("btn-toggle-pago")) {
     const trabajo = state.trabajos.find((t) => t.id === id);
-    const { error } = await supabaseClient.from("trabajos").update({ pagado: !trabajo.pagado }).eq("id", id);
+    const { error } = await supabaseClient.from("elcoya_trabajos").update({ pagado: !trabajo.pagado }).eq("id", id);
     if (error) return mostrarError("No se pudo actualizar: " + error.message);
     await cargarTrabajos();
     renderStats();
@@ -1530,7 +1530,7 @@ $("#listaTrabajos").addEventListener("click", async (e) => {
 
   if (e.target.classList.contains("btn-toggle-entrega")) {
     const trabajo = state.trabajos.find((t) => t.id === id);
-    const { error } = await supabaseClient.from("trabajos").update({ entregado: !trabajo.entregado }).eq("id", id);
+    const { error } = await supabaseClient.from("elcoya_trabajos").update({ entregado: !trabajo.entregado }).eq("id", id);
     if (error) return mostrarError("No se pudo actualizar: " + error.message);
     await cargarTrabajos();
     renderStats();
@@ -1538,7 +1538,7 @@ $("#listaTrabajos").addEventListener("click", async (e) => {
 
   if (e.target.classList.contains("btn-borrar-trabajo")) {
     if (!confirm("¿Borrar este trabajo?")) return;
-    const { error } = await supabaseClient.from("trabajos").delete().eq("id", id);
+    const { error } = await supabaseClient.from("elcoya_trabajos").delete().eq("id", id);
     if (error) return mostrarError("No se pudo borrar: " + error.message);
     await cargarTrabajos();
     renderStats();
@@ -1584,8 +1584,8 @@ $("#formProducto").addEventListener("submit", async (e) => {
   if (!payload.nombre) return mostrarError("Falta el nombre del producto.");
 
   const { error } = editId
-    ? await supabaseClient.from("productos").update(payload).eq("id", editId)
-    : await supabaseClient.from("productos").insert(payload);
+    ? await supabaseClient.from("elcoya_productos").update(payload).eq("id", editId)
+    : await supabaseClient.from("elcoya_productos").insert(payload);
   if (error) return mostrarError("No se pudo guardar el producto: " + error.message);
 
   form.reset();
@@ -1605,7 +1605,7 @@ $("#listaProductos").addEventListener("click", async (e) => {
   if (e.target.classList.contains("btn-stock-mas") || e.target.classList.contains("btn-stock-menos")) {
     const delta = e.target.classList.contains("btn-stock-mas") ? 1 : -1;
     const nuevoStock = Math.max(0, producto.stock + delta);
-    const { error } = await supabaseClient.from("productos").update({ stock: nuevoStock }).eq("id", id);
+    const { error } = await supabaseClient.from("elcoya_productos").update({ stock: nuevoStock }).eq("id", id);
     if (error) return mostrarError("No se pudo actualizar el stock: " + error.message);
     await cargarProductos();
   }
@@ -1616,7 +1616,7 @@ $("#listaProductos").addEventListener("click", async (e) => {
 
   if (e.target.classList.contains("btn-borrar-producto")) {
     if (!confirm("¿Borrar este producto?")) return;
-    const { error } = await supabaseClient.from("productos").delete().eq("id", id);
+    const { error } = await supabaseClient.from("elcoya_productos").delete().eq("id", id);
     if (error) return mostrarError("No se pudo borrar: " + error.message);
     await cargarProductos();
     renderStats();
@@ -1707,14 +1707,14 @@ $("#formVenta").addEventListener("submit", async (e) => {
       const disponible = producto.stock + ventaOriginal.cantidad; // se repone lo que ya estaba descontado
       if (cantidad > disponible) return mostrarError(`No hay suficiente stock (disponible: ${disponible}).`);
       const { error: errorStock } = await supabaseClient
-        .from("productos")
+        .from("elcoya_productos")
         .update({ stock: disponible - cantidad })
         .eq("id", producto.id);
       if (errorStock) return mostrarError("No se pudo actualizar el stock: " + errorStock.message);
     }
 
     const { error } = await supabaseClient
-      .from("ventas")
+      .from("elcoya_ventas")
       .update({
         cantidad,
         precio_unitario: precioUnitario,
@@ -1739,11 +1739,11 @@ $("#formVenta").addEventListener("submit", async (e) => {
       fecha,
     };
 
-    const { error: errorVenta } = await supabaseClient.from("ventas").insert(payload);
+    const { error: errorVenta } = await supabaseClient.from("elcoya_ventas").insert(payload);
     if (errorVenta) return mostrarError("No se pudo registrar la venta: " + errorVenta.message);
 
     const { error: errorStock } = await supabaseClient
-      .from("productos")
+      .from("elcoya_productos")
       .update({ stock: producto.stock - cantidad })
       .eq("id", producto.id);
     if (errorStock) mostrarError("La venta se registró, pero no se pudo descontar el stock: " + errorStock.message);
@@ -1772,13 +1772,13 @@ $("#listaVentas").addEventListener("click", async (e) => {
     const producto = state.productos.find((p) => p.id === venta.producto_id);
     if (producto) {
       const { error: errorStock } = await supabaseClient
-        .from("productos")
+        .from("elcoya_productos")
         .update({ stock: producto.stock + venta.cantidad })
         .eq("id", producto.id);
       if (errorStock) return mostrarError("No se pudo reponer el stock: " + errorStock.message);
     }
 
-    const { error } = await supabaseClient.from("ventas").delete().eq("id", id);
+    const { error } = await supabaseClient.from("elcoya_ventas").delete().eq("id", id);
     if (error) return mostrarError("No se pudo borrar la venta: " + error.message);
 
     await Promise.all([cargarProductos(), cargarVentas()]);
