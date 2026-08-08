@@ -562,6 +562,20 @@ button:disabled:active{ transform:none; }
   cursor:pointer;
 }
 .columna-tile-quitar:active{ color: var(--red); }
+.columna-mover{
+  background:none;
+  border:none;
+  color: var(--text-dim);
+  font-size:16px;
+  font-weight:700;
+  line-height:1;
+  padding:0 2px;
+  min-height:0;
+  cursor:pointer;
+}
+.columna-mover:active{ color: var(--amber); }
+.columna-mover:disabled{ opacity:0.25; cursor:default; }
+.columna-mover:disabled:active{ color: var(--text-dim); }
 .chip-vis{
   font-size: 10px !important;
   font-weight:600;
@@ -1341,18 +1355,6 @@ nav.bottom-nav .inner{
       </form>
     </div>
 
-    <div class="panel form-panel" id="panelProveedores" hidden>
-      <h2>Proveedores</h2>
-      <div class="columna-input-row">
-        <input type="text" id="inputNuevoProveedor" placeholder="Nombre del proveedor" autocomplete="off" />
-        <button type="button" class="secundario" id="btnAgregarProveedor">Agregar</button>
-      </div>
-      <div class="columnas-chips" id="proveedoresChips"></div>
-      <div class="full actions-row">
-        <button type="button" class="secundario" data-toggle="panelProveedores">Cerrar</button>
-      </div>
-    </div>
-
     <div class="panel form-panel" id="panelReporte" hidden>
       <h2>Reporte de compras por proveedor</h2>
       <label class="reporte-selector">Proveedor
@@ -1372,7 +1374,6 @@ nav.bottom-nav .inner{
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
         Nueva categoría
       </button>
-      <button type="button" class="ghost" id="btnAbrirProveedores" data-toggle="panelProveedores">Proveedores</button>
       <button type="button" class="ghost" id="btnAbrirReporte">Generar reporte</button>
     </div>
 
@@ -2145,13 +2146,16 @@ function renderTodosProductos() {
 // arma la lista de columnas compartidas (custom) con sus toggles "Prod" / "Ped",
 // tanto en el formulario de Productos como en el de Pedidos (ambos comparten state.columnasTemp)
 function renderColumnasChips() {
+  const total = state.columnasTemp.length;
   const html = state.columnasTemp
     .map(
       (col, i) => `
       <div class="columna-tile">
+        <button type="button" class="columna-mover" data-idx="${i}" data-dir="-1" title="Mover antes"${i === 0 ? " disabled" : ""}>‹</button>
         <span>${escapeHtml(col.nombre)}</span>
         <button type="button" class="chip-vis${col.producto ? " activo" : ""}" data-idx="${i}" data-ambito="producto">Prod</button>
         <button type="button" class="chip-vis${col.pedido ? " activo" : ""}" data-idx="${i}" data-ambito="pedido">Ped</button>
+        <button type="button" class="columna-mover" data-idx="${i}" data-dir="1" title="Mover después"${i === total - 1 ? " disabled" : ""}>›</button>
         <button type="button" class="columna-tile-quitar" data-idx="${i}" title="Quitar">×</button>
       </div>`
     )
@@ -2160,6 +2164,15 @@ function renderColumnasChips() {
   const cont2 = $("#columnasChipsProducto");
   if (cont1) cont1.innerHTML = html;
   if (cont2) cont2.innerHTML = html;
+}
+
+function moverColumnaTemp(idx, direccion) {
+  const nuevoIdx = idx + direccion;
+  if (nuevoIdx < 0 || nuevoIdx >= state.columnasTemp.length) return;
+  const tmp = state.columnasTemp[idx];
+  state.columnasTemp[idx] = state.columnasTemp[nuevoIdx];
+  state.columnasTemp[nuevoIdx] = tmp;
+  renderColumnasChips();
 }
 
 async function agregarColumnaNueva(ambitoPorDefecto) {
@@ -2184,6 +2197,11 @@ async function agregarColumnaNueva(ambitoPorDefecto) {
 }
 
 function manejarClickColumnaTile(e) {
+  const btnMover = e.target.closest(".columna-mover");
+  if (btnMover) {
+    moverColumnaTemp(parseInt(btnMover.dataset.idx), parseInt(btnMover.dataset.dir));
+    return;
+  }
   const btnQuitar = e.target.closest(".columna-tile-quitar");
   if (btnQuitar) {
     state.columnasTemp.splice(parseInt(btnQuitar.dataset.idx), 1);
@@ -2450,57 +2468,6 @@ $("#formCategoria").addEventListener("submit", async (e) => {
   prepararFormularioCategoria(null, "pedido");
   $("#panelFormCategoria").setAttribute("hidden", "");
   await cargarItemsCompleto();
-});
-
-// ---------- pedidos a proveedores: proveedores (lista reutilizable) ----------
-function renderProveedoresChips() {
-  const cont = $("#proveedoresChips");
-  if (state.proveedores.length === 0) {
-    cont.innerHTML = `<div class="empty">Todavía no cargaste proveedores.</div>`;
-    return;
-  }
-  cont.innerHTML = state.proveedores
-    .map((p) => `<span class="chip-columna">${escapeHtml(p.nombre)}<button type="button" data-id="${p.id}" class="btn-quitar-proveedor">×</button></span>`)
-    .join("");
-}
-
-$("#btnAbrirProveedores").addEventListener("click", () => {
-  renderProveedoresChips();
-  $("#inputNuevoProveedor").focus({ preventScroll: true });
-});
-
-$("#inputNuevoProveedor").addEventListener("keydown", (e) => {
-  if (e.key === "Enter") {
-    e.preventDefault();
-    $("#btnAgregarProveedor").click();
-  }
-});
-
-$("#btnAgregarProveedor").addEventListener("click", async () => {
-  const input = $("#inputNuevoProveedor");
-  const nombre = input.value.trim();
-  if (!nombre) return;
-  if (state.proveedores.some((p) => normalizar(p.nombre) === normalizar(nombre))) {
-    input.value = "";
-    return;
-  }
-  const { error } = await supabaseClient.from("elcoya_proveedores").insert({ nombre });
-  if (error) return mostrarError("No se pudo guardar el proveedor: " + error.message);
-  input.value = "";
-  await cargarProveedores();
-  renderProveedoresChips();
-  renderTodosPedidos(); // por si hay tablas en modo edición, para que el desplegable ya lo incluya
-  input.focus();
-});
-
-$("#proveedoresChips").addEventListener("click", async (e) => {
-  if (!e.target.classList.contains("btn-quitar-proveedor")) return;
-  if (!(await confirmarAccion("¿Borrar este proveedor de la lista?"))) return;
-  const { error } = await supabaseClient.from("elcoya_proveedores").delete().eq("id", e.target.dataset.id);
-  if (error) return mostrarError("No se pudo borrar: " + error.message);
-  await cargarProveedores();
-  renderProveedoresChips();
-  renderTodosPedidos();
 });
 
 // ---------- pedidos a proveedores: clicks dentro de cada bloque de categoría ----------
