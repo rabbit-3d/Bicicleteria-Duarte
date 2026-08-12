@@ -106,7 +106,7 @@ header.top{
   min-width:0;
 }
 .stat .label{
-  font-size: 10px;
+  font-size: 10.5px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--text-dim);
@@ -331,6 +331,15 @@ button.ghost:active{ color: var(--text); }
 
 /* ---------- buscador ---------- */
 .search-sort-row{ display:flex; flex-direction:column; gap:10px; margin-bottom: 12px; }
+.search-sort-row.search-sticky{
+  position: sticky;
+  top: var(--header-h, 60px);
+  z-index: 15;
+  background: linear-gradient(var(--bg) 85%, transparent);
+  margin-left: -14px;
+  margin-right: -14px;
+  padding: 8px 14px 10px;
+}
 .search-box{
   position: relative;
   margin-bottom: 0;
@@ -477,7 +486,7 @@ button:disabled:active{ transform:none; }
 .card .monto{ font-size: 17px; flex-shrink:0; white-space:nowrap; }
 
 .badge{
-  font-size: 11px;
+  font-size: 11.5px;
   text-transform:uppercase;
   letter-spacing:0.04em;
   padding: 4px 10px;
@@ -498,29 +507,6 @@ button:disabled:active{ transform:none; }
 .columna-input-row input{ flex:1 1 140px; }
 .columna-input-row select{ flex:1 1 200px; width:auto; }
 .columna-input-row button{ flex:none; }
-.columnas-chips{ display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
-.chip-columna{
-  display:flex;
-  align-items:center;
-  gap:6px;
-  background: var(--panel-2);
-  border: 1px solid var(--border);
-  border-radius: 100px;
-  padding: 6px 8px 6px 14px;
-  font-size: 13px;
-  color: var(--text);
-}
-.chip-columna button{
-  background:none;
-  border:none;
-  color: var(--text-dim);
-  font-size: 17px;
-  line-height:1;
-  padding: 0 4px;
-  min-height:0;
-  cursor:pointer;
-}
-.chip-columna button:active{ color: var(--red); }
 .ayuda-columnas{
   font-size: 12px;
   color: var(--text-dim);
@@ -577,11 +563,11 @@ button:disabled:active{ transform:none; }
 .columna-mover:disabled{ opacity:0.25; cursor:default; }
 .columna-mover:disabled:active{ color: var(--text-dim); }
 .chip-vis{
-  font-size: 10px !important;
+  font-size: 11px !important;
   font-weight:600;
   text-transform:uppercase;
   letter-spacing:0.02em;
-  padding: 3px 7px !important;
+  padding: 4px 8px !important;
   border-radius: 100px;
   background: var(--panel);
   border: 1px solid var(--border);
@@ -649,14 +635,6 @@ button:disabled:active{ transform:none; }
 .pedidos-top-toolbar .btn-nuevo{ width:auto; flex:1 1 auto; min-width:200px; margin-bottom:0; }
 .pedidos-top-toolbar .ghost{ flex:none; padding: 0 18px; }
 
-.btn-agregar-fila{
-  width:100%;
-  margin-top: 10px;
-  border-style: dashed;
-  color: var(--amber);
-  border-color: var(--amber-dim);
-}
-
 .reporte-selector{
   display:block;
   font-size: 12.5px;
@@ -674,65 +652,15 @@ button:disabled:active{ transform:none; }
   overflow-y: auto;
   white-space: pre-wrap;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 12.5px;
+  font-size: 13.5px;
   line-height: 1.6;
   color: var(--text);
   margin-bottom: 14px;
 }
 
-.pedido-campos{ display:flex; flex-direction:column; gap:3px; margin: 2px 0 8px; }
-.pedido-campos .campo{ font-size:13px; color: var(--text-dim); }
-.pedido-campos .campo strong{ color: var(--text); font-weight:600; }
-
-.table-wrap{
-  overflow-x: auto;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  -webkit-overflow-scrolling: touch;
-}
-table.pedidos-table{
-  width:100%;
-  border-collapse: collapse;
-  font-size: 13px;
-}
-table.pedidos-table th,
-table.pedidos-table td{
-  padding: 10px 12px;
-  text-align:left;
-  white-space: nowrap;
-  border-bottom: 1px solid var(--border);
-}
-table.pedidos-table thead th{
-  background: var(--panel-2);
-  color: var(--text-dim);
-  font-family:'Oswald', sans-serif;
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  position: sticky;
-  top: 0;
-}
-table.pedidos-table tbody tr:last-child td{ border-bottom:none; }
-table.pedidos-table tbody tr:nth-child(even){ background: rgba(255,255,255,0.015); }
-table.pedidos-table td.acciones .btns{ display:flex; gap:6px; }
-table.pedidos-table td.tabla-vacia{
-  text-align:center;
-  color: var(--text-dim);
-  white-space:normal;
-  padding: 20px 12px;
-}
-
-.badge-toggle{
-  border:none;
-  cursor:pointer;
-  min-height:auto;
-}
-.badge-toggle:active{ filter: brightness(1.15); }
-
-.estado-celda{ display:flex; flex-direction:column; align-items:flex-start; gap:6px; }
 .btn-recibido-pedido{
-  padding: 3px 10px;
-  font-size: 11px;
+  padding: 4px 11px;
+  font-size: 12px;
   min-height:auto;
   color: var(--teal);
   border-color: var(--teal);
@@ -740,8 +668,8 @@ table.pedidos-table td.tabla-vacia{
 }
 
 .icon-btn{
-  width:32px;
-  height:32px;
+  width:38px;
+  height:38px;
   min-height:0;
   padding:0;
   flex:none;
@@ -749,68 +677,12 @@ table.pedidos-table td.tabla-vacia{
   align-items:center;
   justify-content:center;
 }
-.icon-btn svg{ width:16px; height:16px; }
-
-/* ---------- modo edición de tabla (pedidos) ---------- */
-.tabla-toolbar{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-  margin-bottom: 12px;
-  flex-wrap:wrap;
-}
-.tabla-toolbar .filters{ margin-bottom:0; flex:1; }
-.tabla-toolbar-simple{
-  display:flex;
-  justify-content:flex-end;
-  margin-bottom: 12px;
-}
-.btn-editar-tabla-cat.activo,
-.btn-editar-tabla-producto.activo{
-  color: var(--amber);
-  border-color: var(--amber-dim);
-  background: rgba(227,167,46,0.08);
-}
-.celda-ganancia{ white-space:nowrap; }
-.celda-ganancia.positiva{ color: var(--green); }
-.celda-ganancia.negativa{ color: var(--red); }
+.icon-btn svg{ width:18px; height:18px; }
 
 /* ---------- mientras haya CUALQUIER formulario (crear/editar) abierto, ---------- */
 /* ---------- ocultar todo lo demás de esa pantalla y dejar solo el cartel ---------- */
 .view:has(> .form-panel:not([hidden])) > *:not(.form-panel){
   display:none;
-}
-
-/* ---------- lo mismo cuando una tabla está en modo "Editar tabla": ---------- */
-/* ---------- enfocar sólo esa tabla y ocultar el resto ---------- */
-#viewPedidos.hay-edicion-activa > *:not(#listaCategoriasPedidos):not(.form-panel){ display:none; }
-#viewPedidos.hay-edicion-activa #listaCategoriasPedidos > .categoria-block:not(.editando){ display:none; }
-
-#viewProductos.hay-edicion-activa > *:not(#subvistaInventario):not(.form-panel){ display:none; }
-#viewProductos.hay-edicion-activa #subvistaInventario > *:not(#listaCategoriasProductos){ display:none; }
-#viewProductos.hay-edicion-activa #listaCategoriasProductos > .categoria-block:not(.editando){ display:none; }
-
-.celda-editable{
-  width:100%;
-  min-width: 110px;
-  background: var(--panel-2);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  color: var(--text);
-  padding: 6px 8px;
-  font-family:'Inter', sans-serif;
-  font-size: 13px;
-}
-.celda-editable:focus{ outline: 2px solid var(--amber); outline-offset: 1px; border-color: var(--amber-dim); }
-table.pedidos-table td.celda-td{ padding: 6px 8px; }
-select.celda-editable{
-  appearance:none;
-  -webkit-appearance:none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239aa1a7' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 8px center;
-  padding-right: 26px;
 }
 
 
@@ -1008,6 +880,7 @@ nav.bottom-nav .inner{
 @media (min-width: 640px){
   .app{ padding-left: 24px; padding-right: 24px; }
   header.top{ padding-left: 24px; padding-right: 24px; margin: 0 -24px; }
+  .search-sort-row.search-sticky{ margin-left: -24px; margin-right: -24px; padding-left: 24px; padding-right: 24px; }
   form.grid{ grid-template-columns: 1fr 1fr; }
   form.grid .full{ grid-column: 1 / -1; }
   form.grid .row2{ grid-column: 1 / -1; display:contents; }
@@ -1234,6 +1107,20 @@ nav.bottom-nav .inner{
           <button type="button" class="secundario" data-toggle="panelFormCategoriaProducto">Cancelar</button>
           <button type="submit" class="primary" id="btnGuardarCategoriaProducto">Crear categoría</button>
         </div>
+        <button type="button" class="full btn-borrar-categoria-producto-inline ghost" id="btnBorrarEstaCategoriaProducto" hidden>Borrar esta categoría</button>
+      </form>
+    </div>
+
+    <div class="panel form-panel" id="panelFormItemProducto" hidden>
+      <h2 id="panelFormItemProductoTitulo">Nuevo producto</h2>
+      <form id="formItemProducto" class="grid">
+        <input type="hidden" name="fila_id" />
+        <input type="hidden" name="categoria_id" />
+        <div class="full grid" id="camposItemProducto"></div>
+        <div class="full actions-row">
+          <button type="button" class="secundario" data-toggle="panelFormItemProducto">Cancelar</button>
+          <button type="submit" class="primary" id="btnGuardarItemProducto">Guardar</button>
+        </div>
       </form>
     </div>
 
@@ -1273,6 +1160,13 @@ nav.bottom-nav .inner{
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
         Nueva categoría de producto
       </button>
+
+      <div class="search-sort-row search-sticky">
+        <div class="search-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <input type="search" id="buscarCategoriaProducto" placeholder="Buscar categoría..." autocomplete="off" />
+        </div>
+      </div>
 
       <div id="listaCategoriasProductos"></div>
     </div>
@@ -1352,6 +1246,20 @@ nav.bottom-nav .inner{
           <button type="button" class="secundario" data-toggle="panelFormCategoria">Cancelar</button>
           <button type="submit" class="primary" id="btnGuardarCategoria">Crear categoría</button>
         </div>
+        <button type="button" class="full btn-borrar-categoria-inline ghost" id="btnBorrarEstaCategoria" hidden>Borrar esta categoría</button>
+      </form>
+    </div>
+
+    <div class="panel form-panel" id="panelFormItemPedido" hidden>
+      <h2 id="panelFormItemPedidoTitulo">Nuevo pedido</h2>
+      <form id="formItemPedido" class="grid">
+        <input type="hidden" name="fila_id" />
+        <input type="hidden" name="categoria_id" />
+        <div class="full grid" id="camposItemPedido"></div>
+        <div class="full actions-row">
+          <button type="button" class="secundario" data-toggle="panelFormItemPedido">Cancelar</button>
+          <button type="submit" class="primary" id="btnGuardarItemPedido">Guardar</button>
+        </div>
       </form>
     </div>
 
@@ -1375,6 +1283,18 @@ nav.bottom-nav .inner{
         Nueva categoría
       </button>
       <button type="button" class="ghost" id="btnAbrirReporte">Generar reporte</button>
+    </div>
+
+    <div class="search-sort-row search-sticky">
+      <div class="search-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input type="search" id="buscarCategoriaPedido" placeholder="Buscar tabla..." autocomplete="off" />
+      </div>
+      <select id="ordenCategoriasPedidos" class="select-orden">
+        <option value="alfabetico">Alfabético (A-Z)</option>
+        <option value="reciente">Más recientes primero</option>
+        <option value="antiguo">Más antiguas primero</option>
+      </select>
     </div>
 
     <div id="listaCategoriasPedidos"></div>
@@ -1491,9 +1411,9 @@ const state = {
   periodoEstadisticas: "semana", // semana | mes | anio
   itemsCategorias: [], // compartidas entre Productos y Pedidos
   itemsFilasPorCategoria: {}, // { [categoriaId]: [fila, fila, ...] } — compartidas también
-  filtrosPedidosPorCategoria: {}, // { [categoriaId]: "todos" | "pendiente" | "pedido" }
-  modoEdicionPorCategoria: {}, // { [categoriaId]: true|false } — modo edición del lado Pedidos
-  modoEdicionProductoPorCategoria: {}, // { [categoriaId]: true|false } — modo edición del lado Productos
+  busquedaCategoriasPedidos: "",
+  busquedaCategoriasProductos: "",
+  ordenCategoriasPedidos: "alfabetico", // alfabetico | reciente | antiguo
   columnasTemp: [], // columnas siendo armadas en el formulario de categoría (compartido, un formulario a la vez)
   categoriaFormContexto: null, // 'producto' | 'pedido' — desde dónde se abrió el formulario de categoría
   proveedores: [],
@@ -1504,6 +1424,18 @@ let chartMonto = null;
 
 // ---------- utilidades ----------
 const $ = (sel) => document.querySelector(sel);
+
+// mide la altura real del header (varía según el "notch" del celular) para que los
+// buscadores "pegajosos" (search-sticky) queden justo debajo, sin taparlo ni dejar hueco
+function actualizarAlturaHeader() {
+  const header = document.querySelector("header.top");
+  if (!header) return;
+  document.documentElement.style.setProperty("--header-h", header.offsetHeight + "px");
+}
+actualizarAlturaHeader();
+window.addEventListener("load", actualizarAlturaHeader);
+window.addEventListener("resize", actualizarAlturaHeader);
+
 const $$ = (sel) => document.querySelectorAll(sel);
 
 function normalizar(str) {
@@ -2013,22 +1945,53 @@ function columnasVisiblesProducto(cat) {
     .map((c) => c.nombre);
 }
 // nombres de columnas custom visibles del lado Pedidos, en su orden (sin contar Cantidad/Proveedor/Devolución, que son fijas)
+// ---------- helpers de columnas CUSTOM (las opcionales, que el usuario elige compartir) ----------
+function columnasDe(cat) {
+  return Array.isArray(cat.columnas) ? cat.columnas : [];
+}
+// nombres de columnas custom visibles del lado Productos, en su orden (sin contar Costo/Venta, que son fijas)
+function columnasVisiblesProducto(cat) {
+  return columnasDe(cat)
+    .filter((c) => c.producto && !esCampoFijo(c.nombre))
+    .map((c) => c.nombre);
+}
+// nombres de columnas custom visibles del lado Pedidos, en su orden (sin contar Cantidad/Proveedor/Devolución, que son fijas)
 function columnasVisiblesPedido(cat) {
   return columnasDe(cat)
     .filter((c) => c.pedido && !esCampoFijo(c.nombre))
     .map((c) => c.nombre);
 }
-function modoEdicionProductoDeCategoria(catId) {
-  return !!state.modoEdicionProductoPorCategoria[catId];
+// título corto de una fila para mostrar en la tarjeta (ej: "R26", o el nombre de la categoría si no hay datos todavía)
+function tituloDeFila(categoria, fila, contexto) {
+  if (!categoria) return "Item";
+  const columnas = contexto === "producto" ? columnasVisiblesProducto(categoria) : columnasVisiblesPedido(categoria);
+  const valores = fila.valores || {};
+  const partes = columnas.map((c) => valores[c]).filter((v) => v && v.trim());
+  return partes.length ? partes.join(" · ") : categoria.nombre;
+}
+// saca el primer número de un texto (ej: "R27.5" -> 27.5, "22D" -> 22), para poder ordenar tallas/medidas
+function extraerNumero(texto) {
+  const match = String(texto || "").match(/(\d+(\.\d+)?)/);
+  return match ? parseFloat(match[1]) : null;
+}
+// ordena las tarjetas de una categoría: si el título tiene un número (rodado, dientes, velocidad...)
+// las ordena de mayor a menor; si no, alfabéticamente
+function ordenarFilasPorTitulo(filas, categoria, contexto) {
+  return [...filas].sort((a, b) => {
+    const tituloA = tituloDeFila(categoria, a, contexto);
+    const tituloB = tituloDeFila(categoria, b, contexto);
+    const numA = extraerNumero(tituloA);
+    const numB = extraerNumero(tituloB);
+    if (numA !== null && numB !== null) return numB - numA; // mayor a menor
+    if (numA !== null) return -1;
+    if (numB !== null) return 1;
+    return tituloA.localeCompare(tituloB, "es");
+  });
 }
 // arma una etiqueta legible para una fila (para el desplegable de venta, ej: "Cámaras — R26")
 function etiquetaFilaProducto(categoria, fila) {
   if (!categoria) return "Producto";
-  const valores = fila.valores || {};
-  const partes = columnasVisiblesProducto(categoria)
-    .map((c) => valores[c])
-    .filter((v) => v && v.trim());
-  return partes.length ? `${categoria.nombre} — ${partes.join(" / ")}` : categoria.nombre;
+  return `${categoria.nombre} — ${tituloDeFila(categoria, fila, "producto")}`;
 }
 // busca una fila por id en todas las categorías; devuelve {categoria, fila} o null
 function buscarFilaProductoPorId(id) {
@@ -2040,94 +2003,63 @@ function buscarFilaProductoPorId(id) {
   return null;
 }
 
-// ---------- productos: render (todas las categorías, cada una con su tabla) ----------
-// celda genérica editable (input de texto), reutilizada tanto para columnas custom como fijas
-function celdaEditable(filaId, campo, valor, editando) {
-  if (!editando) return `<td>${escapeHtml(valor || "—")}</td>`;
-  return `<td class="celda-td"><input type="text" class="celda-editable" data-id="${filaId}" data-campo="${escapeHtml(campo)}" value="${escapeHtml(valor || "")}" /></td>`;
-}
+// ícono de tuerca reutilizado para "Configurar categoría"
+const SVG_CONFIG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`;
 
+// ---------- productos: render (todas las categorías, cada una con su lista de tarjetas) ----------
 function construirBloqueCategoriaProducto(cat) {
-  const columnasCustom = columnasVisiblesProducto(cat);
-  const filas = state.itemsFilasPorCategoria[cat.id] || [];
-  const editando = modoEdicionProductoDeCategoria(cat.id);
+  const filas = ordenarFilasPorTitulo(state.itemsFilasPorCategoria[cat.id] || [], cat, "producto");
 
-  const encabezados = `${columnasCustom.map((c) => `<th>${escapeHtml(c)}</th>`).join("")}<th>Precio de costo</th><th>Precio de venta</th><th>Stock</th><th>Ganancia</th><th>Vender</th>${editando ? "<th>Acciones</th>" : ""}`;
-  const colspanVacio = columnasCustom.length + 5 + (editando ? 1 : 0);
-
-  const filasHtml = filas.length
+  const listaHtml = filas.length
     ? filas
         .map((f) => {
           const valores = f.valores || {};
-          const celdasCustom = columnasCustom.map((col) => celdaEditable(f.id, col, valores[col], editando)).join("");
-          const celdaCosto = celdaEditable(f.id, CAMPO_COSTO, valores[CAMPO_COSTO], editando);
-          const celdaVenta = celdaEditable(f.id, CAMPO_VENTA, valores[CAMPO_VENTA], editando);
-
+          const titulo = tituloDeFila(cat, f, "producto");
           const costo = parseFloat(valores[CAMPO_COSTO]) || 0;
           const precio = parseFloat(valores[CAMPO_VENTA]) || 0;
-          let gananciaTd;
+          let gananciaHtml = "";
           if (costo > 0 || precio > 0) {
             const margen = precio - costo;
             const pct = costo > 0 ? Math.round((margen / costo) * 100) : null;
-            gananciaTd = `<td class="celda-ganancia ${margen >= 0 ? "positiva" : "negativa"}">${formatoMoneda(margen)}${pct !== null ? ` (${pct}%)` : ""}</td>`;
-          } else {
-            gananciaTd = `<td>—</td>`;
+            gananciaHtml = `<div class="producto-margen ${margen >= 0 ? "positiva" : "negativa"}">Costo ${formatoMoneda(costo)} · Ganancia ${formatoMoneda(margen)}${pct !== null ? ` (${pct}%)` : ""}</div>`;
           }
-
-          const accionesTd = editando
-            ? `<td class="acciones">
-                <button class="ghost icon-btn btn-borrar-producto-fila" title="Borrar" aria-label="Borrar">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
-                </button>
-              </td>`
-            : "";
-
           return `
-          <tr data-id="${f.id}">
-            ${celdasCustom}
-            ${celdaCosto}
-            ${celdaVenta}
-            <td>
+          <div class="card" data-id="${f.id}">
+            <div class="top-row">
+              <div class="main">
+                <div class="cliente">${escapeHtml(titulo)}</div>
+                ${gananciaHtml}
+              </div>
+              <div class="monto num">${formatoMoneda(precio)}</div>
+            </div>
+            <div class="stock-row">
               <div class="stock-controls">
                 <button type="button" class="btn-stock-menos-fila">−</button>
                 <span class="n num">${f.stock}</span>
                 <button type="button" class="btn-stock-mas-fila">+</button>
               </div>
-            </td>
-            ${gananciaTd}
-            <td><button type="button" class="ghost btn-vender-producto-fila"${f.stock <= 0 ? " disabled" : ""}>Vender</button></td>
-            ${accionesTd}
-          </tr>`;
+              <div class="btns">
+                <button class="ghost btn-editar-item-producto">Editar</button>
+                <button class="ghost btn-vender-producto-fila"${f.stock <= 0 ? " disabled" : ""}>Vender</button>
+                <button class="ghost btn-borrar-producto-fila">Borrar</button>
+              </div>
+            </div>
+          </div>`;
         })
         .join("")
-    : `<tr><td colspan="${colspanVacio}" class="tabla-vacia">Todavía no cargaste productos en esta categoría.</td></tr>`;
+    : `<div class="empty">Todavía no cargaste productos en esta categoría.</div>`;
 
   return `
-  <div class="categoria-block${editando ? " editando" : ""}" data-categoria-id="${cat.id}">
+  <div class="categoria-block" data-categoria-id="${cat.id}">
     <div class="pedidos-detalle-header">
       <h2>${escapeHtml(cat.nombre)}</h2>
-      ${
-        editando
-          ? `<div class="btns">
-              <button type="button" class="ghost btn-editar-categoria-producto-inline" data-categoria="${cat.id}">Editar columnas</button>
-              <button type="button" class="ghost btn-borrar-categoria-producto-inline" data-categoria="${cat.id}">Borrar categoría</button>
-            </div>`
-          : ""
-      }
+      <button type="button" class="ghost icon-btn btn-config-categoria-producto" data-categoria="${cat.id}" title="Configurar categoría" aria-label="Configurar categoría">${SVG_CONFIG}</button>
     </div>
-
-    <div class="tabla-toolbar-simple">
-      <button type="button" class="ghost btn-editar-tabla-producto${editando ? " activo" : ""}" data-categoria="${cat.id}">${editando ? "Listo" : "Editar tabla"}</button>
-    </div>
-
-    <div class="table-wrap">
-      <table class="pedidos-table">
-        <thead><tr>${encabezados}</tr></thead>
-        <tbody>${filasHtml}</tbody>
-      </table>
-    </div>
-
-    ${editando ? `<button type="button" class="btn-agregar-fila" data-categoria="${cat.id}">+ Agregar fila</button>` : ""}
+    <button type="button" class="btn-nuevo btn-nuevo-item-producto" data-categoria="${cat.id}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      Nuevo producto
+    </button>
+    <div class="list">${listaHtml}</div>
   </div>`;
 }
 
@@ -2135,27 +2067,25 @@ function renderTodosProductos() {
   const cont = $("#listaCategoriasProductos");
   if (state.itemsCategorias.length === 0) {
     cont.innerHTML = `<div class="empty">Todavía no creaste ninguna categoría de producto.</div>`;
-    $("#viewProductos").classList.remove("hay-edicion-activa");
     return;
   }
-  cont.innerHTML = state.itemsCategorias.map((cat) => construirBloqueCategoriaProducto(cat)).join("");
-  const hayEdicion = Object.values(state.modoEdicionProductoPorCategoria).some(Boolean);
-  $("#viewProductos").classList.toggle("hay-edicion-activa", hayEdicion);
+  const termino = normalizar(state.busquedaCategoriasProductos);
+  const categorias = termino ? state.itemsCategorias.filter((c) => normalizar(c.nombre).includes(termino)) : state.itemsCategorias;
+  cont.innerHTML = categorias.length
+    ? categorias.map((cat) => construirBloqueCategoriaProducto(cat)).join("")
+    : `<div class="empty">No se encontró ninguna categoría para "${escapeHtml(state.busquedaCategoriasProductos)}".</div>`;
 }
 
 // arma la lista de columnas compartidas (custom) con sus toggles "Prod" / "Ped",
 // tanto en el formulario de Productos como en el de Pedidos (ambos comparten state.columnasTemp)
 function renderColumnasChips() {
-  const total = state.columnasTemp.length;
   const html = state.columnasTemp
     .map(
       (col, i) => `
       <div class="columna-tile">
-        <button type="button" class="columna-mover" data-idx="${i}" data-dir="-1" title="Mover antes"${i === 0 ? " disabled" : ""}>‹</button>
         <span>${escapeHtml(col.nombre)}</span>
         <button type="button" class="chip-vis${col.producto ? " activo" : ""}" data-idx="${i}" data-ambito="producto">Prod</button>
         <button type="button" class="chip-vis${col.pedido ? " activo" : ""}" data-idx="${i}" data-ambito="pedido">Ped</button>
-        <button type="button" class="columna-mover" data-idx="${i}" data-dir="1" title="Mover después"${i === total - 1 ? " disabled" : ""}>›</button>
         <button type="button" class="columna-tile-quitar" data-idx="${i}" title="Quitar">×</button>
       </div>`
     )
@@ -2164,15 +2094,6 @@ function renderColumnasChips() {
   const cont2 = $("#columnasChipsProducto");
   if (cont1) cont1.innerHTML = html;
   if (cont2) cont2.innerHTML = html;
-}
-
-function moverColumnaTemp(idx, direccion) {
-  const nuevoIdx = idx + direccion;
-  if (nuevoIdx < 0 || nuevoIdx >= state.columnasTemp.length) return;
-  const tmp = state.columnasTemp[idx];
-  state.columnasTemp[idx] = state.columnasTemp[nuevoIdx];
-  state.columnasTemp[nuevoIdx] = tmp;
-  renderColumnasChips();
 }
 
 async function agregarColumnaNueva(ambitoPorDefecto) {
@@ -2197,11 +2118,6 @@ async function agregarColumnaNueva(ambitoPorDefecto) {
 }
 
 function manejarClickColumnaTile(e) {
-  const btnMover = e.target.closest(".columna-mover");
-  if (btnMover) {
-    moverColumnaTemp(parseInt(btnMover.dataset.idx), parseInt(btnMover.dataset.dir));
-    return;
-  }
   const btnQuitar = e.target.closest(".columna-tile-quitar");
   if (btnQuitar) {
     state.columnasTemp.splice(parseInt(btnQuitar.dataset.idx), 1);
@@ -2276,14 +2192,6 @@ function renderVentas() {
     .join("");
 }
 
-// ---------- pedidos a proveedores: helpers de estado por categoría ----------
-function filtroDeCategoria(catId) {
-  return state.filtrosPedidosPorCategoria[catId] || "todos";
-}
-function modoEdicionDeCategoria(catId) {
-  return !!state.modoEdicionPorCategoria[catId];
-}
-
 // arma las <option> de un <select> de proveedor, respetando el valor actual
 // aunque no esté (todavía) en la lista guardada de proveedores
 function opcionesProveedor(valorActual) {
@@ -2296,88 +2204,51 @@ function opcionesProveedor(valorActual) {
   return items.join("");
 }
 
-// ---------- pedidos a proveedores: render (todas las categorías, cada una con su tabla) ----------
+// ---------- pedidos a proveedores: render (todas las categorías, cada una con su lista de tarjetas) ----------
 function construirBloqueCategoria(cat) {
-  const columnasCustom = columnasVisiblesPedido(cat);
-  const todasLasFilas = state.itemsFilasPorCategoria[cat.id] || [];
-  const filtro = filtroDeCategoria(cat.id);
-  const editando = modoEdicionDeCategoria(cat.id);
+  const items = ordenarFilasPorTitulo(state.itemsFilasPorCategoria[cat.id] || [], cat, "pedido");
 
-  let items = todasLasFilas;
-  if (filtro === "pendiente") items = items.filter((f) => !f.pedido);
-  if (filtro === "pedido") items = items.filter((f) => f.pedido);
-
-  const encabezados = `${columnasCustom.map((c) => `<th>${escapeHtml(c)}</th>`).join("")}<th>Cantidad</th><th>Proveedor</th><th>Devolución</th>`;
-
-  const filasHtml = items.length
+  const listaHtml = items.length
     ? items
         .map((f) => {
           const valores = f.valores || {};
-          const celdasCustom = columnasCustom.map((col) => celdaEditable(f.id, col, valores[col], editando)).join("");
-          const celdaCantidad = celdaEditable(f.id, CAMPO_CANTIDAD, valores[CAMPO_CANTIDAD], editando);
-          const celdaProveedor = editando
-            ? `<td class="celda-td"><select class="celda-editable celda-proveedor" data-id="${f.id}" data-campo="${CAMPO_PROVEEDOR}">${opcionesProveedor(valores[CAMPO_PROVEEDOR] || "")}</select></td>`
-            : `<td>${escapeHtml(valores[CAMPO_PROVEEDOR] || "—")}</td>`;
-          const celdaDevolucion = celdaEditable(f.id, CAMPO_DEVOLUCION, valores[CAMPO_DEVOLUCION], editando);
-
+          const titulo = tituloDeFila(cat, f, "pedido");
+          const cantidad = valores[CAMPO_CANTIDAD] || "—";
+          const proveedor = valores[CAMPO_PROVEEDOR] || "—";
+          const devolucion = valores[CAMPO_DEVOLUCION] || "";
           const badgeClass = f.pedido ? "pagado" : "pendiente";
           const badgeTxt = f.pedido ? "Pedido" : "Pendiente";
-          const accionesTd = editando
-            ? `<td class="acciones">
-                <button class="ghost icon-btn btn-borrar-pedido" title="Borrar" aria-label="Borrar">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
-                </button>
-              </td>`
-            : "";
           return `
-          <tr data-id="${f.id}">
-            ${celdasCustom}
-            ${celdaCantidad}
-            ${celdaProveedor}
-            ${celdaDevolucion}
-            <td>
-              <div class="estado-celda">
-                <button type="button" class="badge-toggle badge ${badgeClass} btn-toggle-pedido">${badgeTxt}</button>
-                ${f.pedido ? `<button type="button" class="ghost btn-recibido-pedido">Recibido</button>` : ""}
+          <div class="card" data-id="${f.id}">
+            <div class="top-row">
+              <div class="main">
+                <div class="cliente">${escapeHtml(titulo)}</div>
+                <div class="desc">Cantidad: ${escapeHtml(cantidad)} · Proveedor: ${escapeHtml(proveedor)}${devolucion ? ` · Devolución: ${escapeHtml(devolucion)}` : ""}</div>
               </div>
-            </td>
-            ${accionesTd}
-          </tr>`;
+            </div>
+            <div class="badges-row"><span class="badge ${badgeClass}">${badgeTxt}</span></div>
+            <div class="btns">
+              <button class="ghost btn-toggle-pedido">${f.pedido ? "Marcar pendiente" : "Marcar pedido"}</button>
+              ${f.pedido ? `<button class="ghost btn-recibido-pedido">Recibido</button>` : ""}
+              <button class="ghost btn-editar-item-pedido">Editar</button>
+              <button class="ghost btn-borrar-pedido">Borrar</button>
+            </div>
+          </div>`;
         })
         .join("")
-    : `<tr><td colspan="${columnasCustom.length + 4 + (editando ? 1 : 0)}" class="tabla-vacia">No hay pedidos para mostrar.</td></tr>`;
+    : `<div class="empty">No hay pedidos para mostrar.</div>`;
 
   return `
-  <div class="categoria-block${editando ? " editando" : ""}" data-categoria-id="${cat.id}">
+  <div class="categoria-block" data-categoria-id="${cat.id}">
     <div class="pedidos-detalle-header">
       <h2>${escapeHtml(cat.nombre)}</h2>
-      ${
-        editando
-          ? `<div class="btns">
-              <button type="button" class="ghost btn-editar-categoria-inline" data-categoria="${cat.id}">Editar columnas</button>
-              <button type="button" class="ghost btn-borrar-categoria-inline" data-categoria="${cat.id}">Borrar categoría</button>
-            </div>`
-          : ""
-      }
+      <button type="button" class="ghost icon-btn btn-config-categoria" data-categoria="${cat.id}" title="Configurar categoría" aria-label="Configurar categoría">${SVG_CONFIG}</button>
     </div>
-
-    <div class="tabla-toolbar">
-      <div class="filters">
-        <button data-categoria="${cat.id}" data-filtro="todos" class="${filtro === "todos" ? "active" : ""}">Todos</button>
-        <button data-categoria="${cat.id}" data-filtro="pendiente" class="${filtro === "pendiente" ? "active" : ""}">Pendientes</button>
-        <button data-categoria="${cat.id}" data-filtro="pedido" class="${filtro === "pedido" ? "active" : ""}">Ya pedidos</button>
-      </div>
-      <button type="button" class="ghost btn-editar-tabla-cat${editando ? " activo" : ""}" data-categoria="${cat.id}">${editando ? "Listo" : "Editar tabla"}</button>
-    </div>
-
-    <div class="table-wrap">
-      <table class="pedidos-table">
-        <thead><tr>${encabezados}<th>Estado</th>${editando ? "<th>Acciones</th>" : ""}</tr></thead>
-        <tbody>${filasHtml}</tbody>
-      </table>
-    </div>
-
-    ${editando ? `<button type="button" class="btn-agregar-fila" data-categoria="${cat.id}">+ Agregar fila</button>` : ""}
+    <button type="button" class="btn-nuevo btn-nuevo-item-pedido" data-categoria="${cat.id}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      Nuevo pedido
+    </button>
+    <div class="list">${listaHtml}</div>
   </div>`;
 }
 
@@ -2385,31 +2256,43 @@ function renderTodosPedidos() {
   const cont = $("#listaCategoriasPedidos");
   if (state.itemsCategorias.length === 0) {
     cont.innerHTML = `<div class="empty">Todavía no creaste ninguna categoría de pedidos.</div>`;
-    $("#viewPedidos").classList.remove("hay-edicion-activa");
     return;
   }
-  cont.innerHTML = state.itemsCategorias.map((cat) => construirBloqueCategoria(cat)).join("");
-  const hayEdicion = Object.values(state.modoEdicionPorCategoria).some(Boolean);
-  $("#viewPedidos").classList.toggle("hay-edicion-activa", hayEdicion);
+
+  const termino = normalizar(state.busquedaCategoriasPedidos);
+  let categorias = termino ? state.itemsCategorias.filter((c) => normalizar(c.nombre).includes(termino)) : [...state.itemsCategorias];
+
+  switch (state.ordenCategoriasPedidos) {
+    case "reciente":
+      categorias.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      break;
+    case "antiguo":
+      categorias.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+      break;
+    case "alfabetico":
+    default:
+      categorias.sort((a, b) => a.nombre.localeCompare(b.nombre, "es"));
+  }
+
+  cont.innerHTML = categorias.length
+    ? categorias.map((cat) => construirBloqueCategoria(cat)).join("")
+    : `<div class="empty">No se encontró ninguna tabla para "${escapeHtml(state.busquedaCategoriasPedidos)}".</div>`;
 }
 
 // ---------- agregar fila vacía (compartida: la misma tabla para Productos y Pedidos) ----------
-async function agregarFilaEnCategoria(categoriaId) {
-  const { data, error } = await supabaseClient
-    .from("elcoya_items_filas")
-    .insert({ categoria_id: categoriaId, valores: {}, stock: 0, pedido: false })
-    .select()
-    .single();
-  if (error) return mostrarError("No se pudo agregar la fila: " + error.message);
-
-  if (!state.itemsFilasPorCategoria[categoriaId]) state.itemsFilasPorCategoria[categoriaId] = [];
-  state.itemsFilasPorCategoria[categoriaId].push(data);
-  state.filtrosPedidosPorCategoria[categoriaId] = "todos"; // para que la fila nueva no quede oculta por un filtro
-
-  renderTodosPedidos();
-  renderTodosProductos();
-  renderStats();
-  return data;
+// arma los campos de un formulario dinámico (Nuevo/Editar producto o pedido), un <label><input> por columna.
+// Si "proveedorCampo" coincide con el nombre de la columna, se arma como <select> en vez de <input>.
+function generarCamposItem(containerId, columnas, valores, proveedorCampo) {
+  const cont = $(containerId);
+  cont.innerHTML = columnas
+    .map((col) => {
+      const valorActual = (valores && valores[col]) || "";
+      if (col === proveedorCampo) {
+        return `<label class="full">${escapeHtml(col)}<select data-campo="${escapeHtml(col)}">${opcionesProveedor(valorActual)}</select></label>`;
+      }
+      return `<label class="full">${escapeHtml(col)}<input type="text" data-campo="${escapeHtml(col)}" value="${escapeHtml(valorActual)}" autocomplete="off" /></label>`;
+    })
+    .join("");
 }
 
 // ---------- formulario de categoría: crear/editar, compartido entre Productos y Pedidos ----------
@@ -2433,9 +2316,13 @@ function prepararFormularioCategoria(categoria, contexto) {
   if (esProducto) {
     $("#panelFormCategoriaProductoTitulo").textContent = categoria ? "Editar categoría" : "Nueva categoría de producto";
     $("#btnGuardarCategoriaProducto").textContent = categoria ? "Guardar cambios" : "Crear categoría";
+    $("#btnBorrarEstaCategoriaProducto").toggleAttribute("hidden", !categoria);
+    $("#btnBorrarEstaCategoriaProducto").dataset.categoria = categoria ? categoria.id : "";
   } else {
     $("#panelFormCategoriaTitulo").textContent = categoria ? "Editar categoría" : "Nueva categoría";
     $("#btnGuardarCategoria").textContent = categoria ? "Guardar cambios" : "Crear categoría";
+    $("#btnBorrarEstaCategoria").toggleAttribute("hidden", !categoria);
+    $("#btnBorrarEstaCategoria").dataset.categoria = categoria ? categoria.id : "";
   }
 }
 
@@ -2448,6 +2335,16 @@ function abrirFormularioCategoria(categoria) {
 
 $("#btnNuevaCategoriaPedido").addEventListener("click", () => {
   if (!$("#panelFormCategoria").hasAttribute("hidden")) prepararFormularioCategoria(null, "pedido");
+});
+
+$("#buscarCategoriaPedido").addEventListener("input", (e) => {
+  state.busquedaCategoriasPedidos = e.target.value;
+  renderTodosPedidos();
+});
+
+$("#ordenCategoriasPedidos").addEventListener("change", (e) => {
+  state.ordenCategoriasPedidos = e.target.value;
+  renderTodosPedidos();
 });
 
 $("#formCategoria").addEventListener("submit", async (e) => {
@@ -2470,57 +2367,49 @@ $("#formCategoria").addEventListener("submit", async (e) => {
   await cargarItemsCompleto();
 });
 
+// borra una categoría completa (y todas sus filas); es la misma tabla en Productos y Pedidos, así que borra de los dos lados
+async function borrarCategoriaCompleta(categoriaId, panelIdACerrar) {
+  const categoria = state.itemsCategorias.find((c) => c.id === categoriaId);
+  if (!categoria) return;
+  if (!(await confirmarAccion(`¿Borrar la categoría "${categoria.nombre}" y todo lo que tiene cargado? Esto la borra tanto de Productos como de Pedidos.`))) return;
+  const { error } = await supabaseClient.from("elcoya_items_categorias").delete().eq("id", categoriaId);
+  if (error) return mostrarError("No se pudo borrar: " + error.message);
+  if (panelIdACerrar) $(panelIdACerrar).setAttribute("hidden", "");
+  await cargarItemsCompleto();
+}
+
+$("#btnBorrarEstaCategoria").addEventListener("click", (e) => borrarCategoriaCompleta(e.target.dataset.categoria, "#panelFormCategoria"));
+$("#btnBorrarEstaCategoriaProducto").addEventListener("click", (e) => borrarCategoriaCompleta(e.target.dataset.categoria, "#panelFormCategoriaProducto"));
+
 // ---------- pedidos a proveedores: clicks dentro de cada bloque de categoría ----------
 $("#listaCategoriasPedidos").addEventListener("click", async (e) => {
-  const btnEditar = e.target.closest(".btn-editar-categoria-inline");
-  if (btnEditar) {
-    const categoria = state.itemsCategorias.find((c) => c.id === btnEditar.dataset.categoria);
+  const btnConfig = e.target.closest(".btn-config-categoria");
+  if (btnConfig) {
+    const categoria = state.itemsCategorias.find((c) => c.id === btnConfig.dataset.categoria);
     if (categoria) abrirFormularioCategoria(categoria);
     return;
   }
 
-  const btnBorrarCat = e.target.closest(".btn-borrar-categoria-inline");
-  if (btnBorrarCat) {
-    const categoria = state.itemsCategorias.find((c) => c.id === btnBorrarCat.dataset.categoria);
-    if (!categoria) return;
-    if (!(await confirmarAccion(`¿Borrar la categoría "${categoria.nombre}"? Ojo: es la misma tabla que se ve en Productos, así que también va a desaparecer de ahí, junto con todas sus filas.`))) return;
-    const { error } = await supabaseClient.from("elcoya_items_categorias").delete().eq("id", categoria.id);
-    if (error) return mostrarError("No se pudo borrar: " + error.message);
-    await cargarItemsCompleto();
+  const btnNuevoItem = e.target.closest(".btn-nuevo-item-pedido");
+  if (btnNuevoItem) {
+    const categoria = state.itemsCategorias.find((c) => c.id === btnNuevoItem.dataset.categoria);
+    if (categoria) abrirFormularioItemPedido(categoria, null);
     return;
   }
 
-  const btnFiltro = e.target.closest("[data-filtro]");
-  if (btnFiltro) {
-    state.filtrosPedidosPorCategoria[btnFiltro.dataset.categoria] = btnFiltro.dataset.filtro;
-    renderTodosPedidos();
-    return;
-  }
-
-  const btnEditarTabla = e.target.closest(".btn-editar-tabla-cat");
-  if (btnEditarTabla) {
-    const catId = btnEditarTabla.dataset.categoria;
-    state.modoEdicionPorCategoria[catId] = !modoEdicionDeCategoria(catId);
-    renderTodosPedidos();
-    return;
-  }
-
-  const btnAgregarFila = e.target.closest(".btn-agregar-fila");
-  if (btnAgregarFila) {
-    const catId = btnAgregarFila.dataset.categoria;
-    await agregarFilaEnCategoria(catId);
-    const bloque = document.querySelector(`#listaCategoriasPedidos .categoria-block[data-categoria-id="${catId}"]`);
-    bloque?.querySelector("tbody tr:last-child .celda-editable")?.focus({ preventScroll: true });
-    return;
-  }
-
-  const fila = e.target.closest("tr[data-id]");
-  if (fila) {
+  const card = e.target.closest(".card[data-id]");
+  if (card) {
     const bloque = e.target.closest(".categoria-block");
     const catId = bloque ? bloque.dataset.categoriaId : null;
-    const id = fila.dataset.id;
+    const id = card.dataset.id;
     const filaData = (state.itemsFilasPorCategoria[catId] || []).find((f) => f.id === id);
     if (!filaData) return;
+
+    if (e.target.closest(".btn-editar-item-pedido")) {
+      const categoria = state.itemsCategorias.find((c) => c.id === catId);
+      if (categoria) abrirFormularioItemPedido(categoria, filaData);
+      return;
+    }
 
     if (e.target.closest(".btn-toggle-pedido")) {
       const { error } = await supabaseClient.from("elcoya_items_filas").update({ pedido: !filaData.pedido }).eq("id", id);
@@ -2585,68 +2474,74 @@ $("#listaCategoriasPedidos").addEventListener("click", async (e) => {
   }
 });
 
-// guarda el valor de una celda de texto apenas se sale de ella (como una planilla)
-$("#listaCategoriasPedidos").addEventListener("focusout", async (e) => {
-  if (!e.target.classList.contains("celda-editable") || e.target.tagName === "SELECT") return;
-  await guardarValorCelda(e.target);
-});
+// ---------- pedidos: formulario dinámico de Nuevo/Editar pedido ----------
+function abrirFormularioItemPedido(categoria, fila) {
+  const columnas = [...columnasVisiblesPedido(categoria), CAMPO_CANTIDAD, CAMPO_PROVEEDOR, CAMPO_DEVOLUCION];
+  const form = $("#formItemPedido");
+  form.fila_id.value = fila ? fila.id : "";
+  form.categoria_id.value = categoria.id;
+  generarCamposItem("#camposItemPedido", columnas, fila ? fila.valores : null, CAMPO_PROVEEDOR);
+  $("#panelFormItemPedidoTitulo").textContent = fila ? `Editar pedido — ${categoria.nombre}` : `Nuevo pedido — ${categoria.nombre}`;
+  $("#btnGuardarItemPedido").textContent = fila ? "Guardar cambios" : "Guardar";
+  $("#panelFormItemPedido").removeAttribute("hidden");
+  $("#camposItemPedido input, #camposItemPedido select")[0]?.focus({ preventScroll: true });
+  $("#panelFormItemPedido").scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
 
-// Enter en una celda de texto = guardar y salir (como tabular)
-$("#listaCategoriasPedidos").addEventListener("keydown", (e) => {
-  if (e.target.classList.contains("celda-editable") && e.target.tagName !== "SELECT" && e.key === "Enter") {
-    e.preventDefault();
-    e.target.blur();
-  }
-});
-
-// selects de proveedor: se guardan apenas se elige una opción
-$("#listaCategoriasPedidos").addEventListener("change", async (e) => {
-  if (!e.target.classList.contains("celda-proveedor")) return;
+// el desplegable de Proveedor dentro del formulario: "+ Nuevo proveedor..." lo crea al vuelo
+$("#camposItemPedido").addEventListener("change", async (e) => {
   const select = e.target;
+  if (select.tagName !== "SELECT" || select.value !== "__nuevo__") return;
 
-  if (select.value === "__nuevo__") {
-    const nombre = await confirmarAccion("¿Cómo se llama el proveedor nuevo?", "Agregar", "Cancelar", {
-      pedirTexto: true,
-      placeholder: "Nombre del proveedor",
-    });
-    if (!nombre) {
+  const nombre = await confirmarAccion("¿Cómo se llama el proveedor nuevo?", "Agregar", "Cancelar", {
+    pedirTexto: true,
+    placeholder: "Nombre del proveedor",
+  });
+  if (!nombre) {
+    select.value = "";
+    return;
+  }
+  if (!state.proveedores.some((p) => normalizar(p.nombre) === normalizar(nombre))) {
+    const { error } = await supabaseClient.from("elcoya_proveedores").insert({ nombre });
+    if (error) {
+      mostrarError("No se pudo crear el proveedor: " + error.message);
       select.value = "";
       return;
     }
-    if (!state.proveedores.some((p) => normalizar(p.nombre) === normalizar(nombre))) {
-      const { error } = await supabaseClient.from("elcoya_proveedores").insert({ nombre });
-      if (error) {
-        mostrarError("No se pudo crear el proveedor: " + error.message);
-        select.value = "";
-        return;
-      }
-      await cargarProveedores();
-    }
-    select.value = nombre;
+    await cargarProveedores();
   }
-
-  await guardarValorCelda(select);
-  renderTodosPedidos(); // refresca los desplegables de las demás tablas si se creó un proveedor nuevo
+  // reconstruir las opciones (para que incluyan el nuevo) y dejarlo seleccionado
+  select.innerHTML = opcionesProveedor(nombre);
 });
 
-// guarda el valor de una celda (input o select) en Supabase y en memoria
-async function guardarValorCelda(campoEl) {
-  const bloque = campoEl.closest(".categoria-block");
-  const catId = bloque ? bloque.dataset.categoriaId : null;
-  const id = campoEl.dataset.id;
-  const campo = campoEl.dataset.campo;
-  const nuevoValor = campoEl.value.trim();
-  const filaData = (state.itemsFilasPorCategoria[catId] || []).find((f) => f.id === id);
-  if (!filaData) return;
+$("#formItemPedido").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const form = e.target;
+  const filaId = form.fila_id.value;
+  const categoriaId = form.categoria_id.value;
 
-  const valorAnterior = (filaData.valores && filaData.valores[campo]) || "";
-  if (nuevoValor === valorAnterior) return; // no cambió, no gastar una llamada de más
+  const camposNuevos = {};
+  $$("#camposItemPedido [data-campo]").forEach((el) => {
+    camposNuevos[el.dataset.campo] = el.value.trim();
+  });
 
-  const nuevosValores = { ...(filaData.valores || {}), [campo]: nuevoValor };
-  const { error } = await supabaseClient.from("elcoya_items_filas").update({ valores: nuevosValores }).eq("id", id);
-  if (error) return mostrarError("No se pudo guardar: " + error.message);
-  filaData.valores = nuevosValores;
-}
+  if (filaId) {
+    const encontrado = buscarFilaProductoPorId(filaId);
+    const valoresPrevios = encontrado ? encontrado.fila.valores || {} : {};
+    const nuevosValores = { ...valoresPrevios, ...camposNuevos };
+    const { error } = await supabaseClient.from("elcoya_items_filas").update({ valores: nuevosValores }).eq("id", filaId);
+    if (error) return mostrarError("No se pudo guardar: " + error.message);
+  } else {
+    const { error } = await supabaseClient
+      .from("elcoya_items_filas")
+      .insert({ categoria_id: categoriaId, valores: camposNuevos, stock: 0, pedido: false });
+    if (error) return mostrarError("No se pudo guardar: " + error.message);
+  }
+
+  form.reset();
+  $("#panelFormItemPedido").setAttribute("hidden", "");
+  await cargarItemsCompleto();
+});
 
 // ---------- pedidos a proveedores: reporte de compras agrupado por proveedor ----------
 function generarAgrupacionReporte() {
@@ -3002,6 +2897,11 @@ $("#btnNuevaCategoriaProducto").addEventListener("click", () => {
   if (!$("#panelFormCategoriaProducto").hasAttribute("hidden")) prepararFormularioCategoria(null, "producto");
 });
 
+$("#buscarCategoriaProducto").addEventListener("input", (e) => {
+  state.busquedaCategoriasProductos = e.target.value;
+  renderTodosProductos();
+});
+
 $("#formCategoriaProducto").addEventListener("submit", async (e) => {
   e.preventDefault();
   const form = e.target;
@@ -3024,48 +2924,33 @@ $("#formCategoriaProducto").addEventListener("submit", async (e) => {
 
 // ---------- productos: clicks dentro de cada bloque de categoría ----------
 $("#listaCategoriasProductos").addEventListener("click", async (e) => {
-  const btnEditar = e.target.closest(".btn-editar-categoria-producto-inline");
-  if (btnEditar) {
-    const categoria = state.itemsCategorias.find((c) => c.id === btnEditar.dataset.categoria);
+  const btnConfig = e.target.closest(".btn-config-categoria-producto");
+  if (btnConfig) {
+    const categoria = state.itemsCategorias.find((c) => c.id === btnConfig.dataset.categoria);
     if (categoria) abrirFormularioCategoriaProducto(categoria);
     return;
   }
 
-  const btnBorrarCat = e.target.closest(".btn-borrar-categoria-producto-inline");
-  if (btnBorrarCat) {
-    const categoria = state.itemsCategorias.find((c) => c.id === btnBorrarCat.dataset.categoria);
-    if (!categoria) return;
-    if (!(await confirmarAccion(`¿Borrar la categoría "${categoria.nombre}"? Ojo: es la misma tabla que se ve en Pedidos, así que también va a desaparecer de ahí, junto con todas sus filas.`))) return;
-    const { error } = await supabaseClient.from("elcoya_items_categorias").delete().eq("id", categoria.id);
-    if (error) return mostrarError("No se pudo borrar: " + error.message);
-    await cargarItemsCompleto();
+  const btnNuevoItem = e.target.closest(".btn-nuevo-item-producto");
+  if (btnNuevoItem) {
+    const categoria = state.itemsCategorias.find((c) => c.id === btnNuevoItem.dataset.categoria);
+    if (categoria) abrirFormularioItemProducto(categoria, null);
     return;
   }
 
-  const btnEditarTabla = e.target.closest(".btn-editar-tabla-producto");
-  if (btnEditarTabla) {
-    const catId = btnEditarTabla.dataset.categoria;
-    state.modoEdicionProductoPorCategoria[catId] = !modoEdicionProductoDeCategoria(catId);
-    renderTodosProductos();
-    return;
-  }
-
-  const btnAgregarFila = e.target.closest(".btn-agregar-fila");
-  if (btnAgregarFila) {
-    const catId = btnAgregarFila.dataset.categoria;
-    await agregarFilaEnCategoria(catId);
-    const bloque = document.querySelector(`#listaCategoriasProductos .categoria-block[data-categoria-id="${catId}"]`);
-    bloque?.querySelector("tbody tr:last-child .celda-editable")?.focus({ preventScroll: true });
-    return;
-  }
-
-  const fila = e.target.closest("tr[data-id]");
-  if (fila) {
+  const card = e.target.closest(".card[data-id]");
+  if (card) {
     const bloque = e.target.closest(".categoria-block");
     const catId = bloque ? bloque.dataset.categoriaId : null;
-    const id = fila.dataset.id;
+    const id = card.dataset.id;
     const filaData = (state.itemsFilasPorCategoria[catId] || []).find((f) => f.id === id);
     if (!filaData) return;
+
+    if (e.target.closest(".btn-editar-item-producto")) {
+      const categoria = state.itemsCategorias.find((c) => c.id === catId);
+      if (categoria) abrirFormularioItemProducto(categoria, filaData);
+      return;
+    }
 
     if (e.target.closest(".btn-stock-mas-fila") || e.target.closest(".btn-stock-menos-fila")) {
       const delta = e.target.closest(".btn-stock-mas-fila") ? 1 : -1;
@@ -3093,31 +2978,47 @@ $("#listaCategoriasProductos").addEventListener("click", async (e) => {
   }
 });
 
-// guarda el valor de una celda de producto apenas se sale de ella (como una planilla)
-$("#listaCategoriasProductos").addEventListener("focusout", async (e) => {
-  if (!e.target.classList.contains("celda-editable")) return;
-  const bloque = e.target.closest(".categoria-block");
-  const catId = bloque ? bloque.dataset.categoriaId : null;
-  const id = e.target.dataset.id;
-  const campo = e.target.dataset.campo;
-  const nuevoValor = e.target.value.trim();
-  const filaData = (state.itemsFilasPorCategoria[catId] || []).find((f) => f.id === id);
-  if (!filaData) return;
+// ---------- productos: formulario dinámico de Nuevo/Editar producto ----------
+function abrirFormularioItemProducto(categoria, fila) {
+  const columnas = [...columnasVisiblesProducto(categoria), CAMPO_COSTO, CAMPO_VENTA];
+  const form = $("#formItemProducto");
+  form.fila_id.value = fila ? fila.id : "";
+  form.categoria_id.value = categoria.id;
+  generarCamposItem("#camposItemProducto", columnas, fila ? fila.valores : null);
+  $("#panelFormItemProductoTitulo").textContent = fila ? `Editar producto — ${categoria.nombre}` : `Nuevo producto — ${categoria.nombre}`;
+  $("#btnGuardarItemProducto").textContent = fila ? "Guardar cambios" : "Guardar";
+  $("#panelFormItemProducto").removeAttribute("hidden");
+  $("#camposItemProducto input")[0]?.focus({ preventScroll: true });
+  $("#panelFormItemProducto").scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
 
-  const valorAnterior = (filaData.valores && filaData.valores[campo]) || "";
-  if (nuevoValor === valorAnterior) return;
+$("#formItemProducto").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const form = e.target;
+  const filaId = form.fila_id.value;
+  const categoriaId = form.categoria_id.value;
 
-  const nuevosValores = { ...(filaData.valores || {}), [campo]: nuevoValor };
-  const { error } = await supabaseClient.from("elcoya_items_filas").update({ valores: nuevosValores }).eq("id", id);
-  if (error) return mostrarError("No se pudo guardar: " + error.message);
-  filaData.valores = nuevosValores;
-});
+  const camposNuevos = {};
+  $$("#camposItemProducto [data-campo]").forEach((el) => {
+    camposNuevos[el.dataset.campo] = el.value.trim();
+  });
 
-$("#listaCategoriasProductos").addEventListener("keydown", (e) => {
-  if (e.target.classList.contains("celda-editable") && e.key === "Enter") {
-    e.preventDefault();
-    e.target.blur();
+  if (filaId) {
+    const encontrado = buscarFilaProductoPorId(filaId);
+    const valoresPrevios = encontrado ? encontrado.fila.valores || {} : {};
+    const nuevosValores = { ...valoresPrevios, ...camposNuevos };
+    const { error } = await supabaseClient.from("elcoya_items_filas").update({ valores: nuevosValores }).eq("id", filaId);
+    if (error) return mostrarError("No se pudo guardar: " + error.message);
+  } else {
+    const { error } = await supabaseClient
+      .from("elcoya_items_filas")
+      .insert({ categoria_id: categoriaId, valores: camposNuevos, stock: 0, pedido: false });
+    if (error) return mostrarError("No se pudo guardar: " + error.message);
   }
+
+  form.reset();
+  $("#panelFormItemProducto").setAttribute("hidden", "");
+  await cargarItemsCompleto();
 });
 
 // ---------- panel de venta rápida ----------
