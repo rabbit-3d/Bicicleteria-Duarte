@@ -3081,6 +3081,22 @@ function actualizarTotalVenta() {
 $("#formVenta").cantidad.addEventListener("input", actualizarTotalVenta);
 $("#formVenta").precio_unitario.addEventListener("input", actualizarTotalVenta);
 
+// error típico cuando el producto de la venta ya no coincide con lo que hay en la base
+// (por ejemplo: se borró o se editó ese producto en otra pestaña/dispositivo mientras
+// este formulario estaba abierto). En vez del mensaje técnico, avisamos y refrescamos.
+function esErrorProductoDesactualizado(error) {
+  return error?.code === "23503" || /foreign key/i.test(error?.message || "");
+}
+
+async function manejarErrorGuardadoVenta(error) {
+  if (esErrorProductoDesactualizado(error)) {
+    mostrarError("Ese producto se actualizó en otro lado y ya no coincide. Volvimos a cargar la lista: elegilo de nuevo e intentá otra vez.");
+    await cargarItemsCompleto();
+  } else {
+    mostrarError("No se pudo registrar la venta: " + error.message);
+  }
+}
+
 $("#formVenta").addEventListener("submit", async (e) => {
   e.preventDefault();
   const form = e.target;
@@ -3122,7 +3138,7 @@ $("#formVenta").addEventListener("submit", async (e) => {
         fecha,
       })
       .eq("id", ventaId);
-    if (error) return mostrarError("No se pudo guardar la venta: " + error.message);
+    if (error) return manejarErrorGuardadoVenta(error);
   } else {
     // ---- nueva venta ----
     if (!fila) return mostrarError("No se encontró el producto.");
@@ -3139,7 +3155,7 @@ $("#formVenta").addEventListener("submit", async (e) => {
     };
 
     const { error: errorVenta } = await supabaseClient.from("elcoya_ventas").insert(payload);
-    if (errorVenta) return mostrarError("No se pudo registrar la venta: " + errorVenta.message);
+    if (errorVenta) return manejarErrorGuardadoVenta(errorVenta);
 
     const { error: errorStock } = await supabaseClient
       .from("elcoya_items_filas")
@@ -3266,6 +3282,19 @@ $("#formGate").addEventListener("submit", async (e) => {
     $("#inputPin").value = "";
     $("#inputPin").focus();
   }
+});
+
+// refresca los datos solos cuando la app vuelve a primer plano (por ejemplo, el celular
+// estuvo un rato en el bolsillo/minimizado), para evitar trabajar con datos viejos.
+let ultimaVezVisible = Date.now();
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState !== "visible") return;
+  const estuvoOculto = Date.now() - ultimaVezVisible > 15000; // más de 15s en segundo plano
+  ultimaVezVisible = Date.now();
+  if (!estuvoOculto) return;
+  if (!supabaseClient) return;
+  if ($("#gatePin").style.display !== "none") return; // todavía no desbloqueó la app
+  cargarTodo();
 });
 
 document.addEventListener("DOMContentLoaded", async () => {
