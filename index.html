@@ -403,6 +403,63 @@ button.ghost:active{ color: var(--text); }
 .subview{ display:none; }
 .subview.active{ display:block; animation: fadein .15s ease; }
 
+/* ---------- menú lateral de tipos (Cámaras, Cadenas, etc.) ---------- */
+.vista-con-menu{ display:flex; flex-direction:column; min-width:0; }
+.tipos-lateral{
+  display:flex;
+  gap:8px;
+  overflow-x:auto;
+  padding: 2px 2px 12px;
+  -ms-overflow-style:none;
+  scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;
+}
+.tipos-lateral::-webkit-scrollbar{ display:none; }
+.tipos-lateral button{
+  flex:0 0 auto;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  padding: 0 16px;
+  font-size: 13px;
+  min-height: 38px;
+  border-radius: 100px;
+  white-space:nowrap;
+}
+.tipos-lateral button.active{
+  color: var(--amber);
+  border-color: var(--amber-dim);
+  background: rgba(227,167,46,0.08);
+}
+.tipos-lateral button.tipo-lateral-nuevo{
+  border-style: dashed;
+  border-color: var(--amber-dim);
+  color: var(--amber);
+  font-weight:600;
+  background: transparent;
+}
+.vista-contenido{ min-width:0; }
+@media (min-width: 960px){
+  .vista-con-menu{ flex-direction:row; align-items:flex-start; gap:18px; }
+  .tipos-lateral{
+    flex-direction:column;
+    overflow:visible;
+    flex: 0 0 180px;
+    position: sticky;
+    top: 20px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px;
+  }
+  .tipos-lateral button{
+    width:100%;
+    text-align:left;
+    border-radius:8px;
+  }
+  .vista-contenido{ flex: 1 1 auto; }
+}
+
 /* ---------- panel de venta rápida ---------- */
 .venta-producto-nombre{
   font-family:'Oswald', sans-serif;
@@ -448,10 +505,62 @@ button:disabled:active{ transform:none; }
 .producto-margen.positiva{ color: var(--green); }
 .producto-margen.negativa{ color: var(--red); }
 
+/* ---------- tabla de productos/pedidos ---------- */
+.tabla-wrap{
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+  border:1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--panel);
+}
+table.tabla-items{ width:100%; border-collapse:collapse; min-width:460px; }
+.tabla-items thead th{
+  position:sticky; top:0; z-index:1;
+  background: var(--panel-2);
+  color: var(--text-dim);
+  font-family:'Oswald', sans-serif;
+  text-transform:uppercase;
+  letter-spacing:0.04em;
+  font-size:10.5px;
+  text-align:left;
+  padding: 10px 12px;
+  white-space:nowrap;
+  border-bottom:1px solid var(--border);
+}
+.tabla-items thead th.num{ text-align:right; }
+.tabla-items tbody td{
+  padding: 10px 12px;
+  border-bottom:1px solid var(--border);
+  font-size:13.5px;
+  white-space:nowrap;
+  vertical-align:middle;
+}
+.tabla-items tbody tr:last-child td{ border-bottom:none; }
+.tabla-items tbody td.wrap{ white-space:normal; min-width:130px; }
+.tabla-items tbody td.num{ text-align:right; }
+.tabla-items .tipo-cell{
+  color: var(--text-dim);
+  font-size:10.5px;
+  text-transform:uppercase;
+  letter-spacing:0.03em;
+  font-family:'Oswald', sans-serif;
+}
+.tabla-items .titulo-fila{ font-weight:600; font-size:14px; color: var(--text); }
+.btns-fila{ display:flex; gap:6px; flex-wrap:nowrap; }
+.btns-fila button{ min-height:34px; padding:0 9px; font-size:12px; flex:none; }
+.stock-mini{ display:flex; align-items:center; gap:6px; justify-content:flex-end; }
+.stock-mini button{ min-height:28px; width:28px; padding:0; font-size:15px; flex:none; }
+.stock-mini .n{ min-width:18px; text-align:center; }
+.tabla-scroll-hint{ font-size:11px; color: var(--text-dim); text-align:center; padding:7px 0 2px; }
+@media (max-width: 420px){
+  .tabla-items thead th, .tabla-items tbody td{ padding:8px 9px; font-size:12.5px; }
+  .btns-fila button{ min-height:32px; font-size:11px; }
+}
+
 /* ---------- listas / tarjetas ---------- */
 .list{ display:flex; flex-direction:column; gap:10px; }
 
-.card{
+div.card{
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -884,7 +993,7 @@ nav.bottom-nav .inner{
   form.grid{ grid-template-columns: 1fr 1fr; }
   form.grid .full{ grid-column: 1 / -1; }
   form.grid .row2{ grid-column: 1 / -1; display:contents; }
-  .card{ flex-direction:row; align-items:center; }
+  div.card{ flex-direction:row; align-items:center; }
   .card .top-row{ flex:1; }
 }
 
@@ -963,7 +1072,7 @@ nav.bottom-nav .inner{
     gap: 12px;
     align-items:start;
   }
-  .card{ flex-direction:column; align-items:stretch; }
+  div.card{ flex-direction:column; align-items:stretch; }
   .card .top-row{ flex:none; }
 
   /* botones más chicos y en una sola fila (en vez de apilados como en mobile) */
@@ -1116,7 +1225,11 @@ nav.bottom-nav .inner{
       <form id="formItemProducto" class="grid">
         <input type="hidden" name="fila_id" />
         <input type="hidden" name="categoria_id" />
+        <label class="full" id="wrapTipoItemProducto" hidden>Tipo de producto
+          <select id="selectTipoItemProducto"></select>
+        </label>
         <div class="full grid" id="camposItemProducto"></div>
+        <button type="button" class="full ghost" id="btnAgregarColumnaItemProducto">+ Agregar columna a este tipo</button>
         <div class="full actions-row">
           <button type="button" class="secundario" data-toggle="panelFormItemProducto">Cancelar</button>
           <button type="submit" class="primary" id="btnGuardarItemProducto">Guardar</button>
@@ -1156,19 +1269,19 @@ nav.bottom-nav .inner{
     </div>
 
     <div id="subvistaInventario" class="subview active">
-      <button type="button" class="btn-nuevo" id="btnNuevaCategoriaProducto" data-toggle="panelFormCategoriaProducto">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-        Nueva categoría de producto
-      </button>
+      <div class="vista-con-menu">
+        <div class="tipos-lateral" id="tiposLateralProductos"></div>
+        <div class="vista-contenido">
+          <div class="search-sort-row search-sticky">
+            <div class="search-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+              <input type="search" id="buscarCategoriaProducto" placeholder="Buscar..." autocomplete="off" />
+            </div>
+          </div>
 
-      <div class="search-sort-row search-sticky">
-        <div class="search-box">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-          <input type="search" id="buscarCategoriaProducto" placeholder="Buscar categoría..." autocomplete="off" />
+          <div id="listaCategoriasProductos"></div>
         </div>
       </div>
-
-      <div id="listaCategoriasProductos"></div>
     </div>
 
     <div id="subvistaVentas" class="subview">
@@ -1255,7 +1368,11 @@ nav.bottom-nav .inner{
       <form id="formItemPedido" class="grid">
         <input type="hidden" name="fila_id" />
         <input type="hidden" name="categoria_id" />
+        <label class="full" id="wrapTipoItemPedido" hidden>Tipo de producto
+          <select id="selectTipoItemPedido"></select>
+        </label>
         <div class="full grid" id="camposItemPedido"></div>
+        <button type="button" class="full ghost" id="btnAgregarColumnaItemPedido">+ Agregar columna a este tipo</button>
         <div class="full actions-row">
           <button type="button" class="secundario" data-toggle="panelFormItemPedido">Cancelar</button>
           <button type="submit" class="primary" id="btnGuardarItemPedido">Guardar</button>
@@ -1278,26 +1395,27 @@ nav.bottom-nav .inner{
     </div>
 
     <div class="pedidos-top-toolbar">
-      <button type="button" class="btn-nuevo" id="btnNuevaCategoriaPedido" data-toggle="panelFormCategoria">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-        Nueva categoría
-      </button>
       <button type="button" class="ghost" id="btnAbrirReporte">Generar reporte</button>
     </div>
 
-    <div class="search-sort-row search-sticky">
-      <div class="search-box">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-        <input type="search" id="buscarCategoriaPedido" placeholder="Buscar tabla..." autocomplete="off" />
-      </div>
-      <select id="ordenCategoriasPedidos" class="select-orden">
-        <option value="alfabetico">Alfabético (A-Z)</option>
-        <option value="reciente">Más recientes primero</option>
-        <option value="antiguo">Más antiguas primero</option>
-      </select>
-    </div>
+    <div class="vista-con-menu">
+      <div class="tipos-lateral" id="tiposLateralPedidos"></div>
+      <div class="vista-contenido">
+        <div class="search-sort-row search-sticky">
+          <div class="search-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+            <input type="search" id="buscarCategoriaPedido" placeholder="Buscar..." autocomplete="off" />
+          </div>
+          <select id="ordenCategoriasPedidos" class="select-orden">
+            <option value="alfabetico">Alfabético (A-Z)</option>
+            <option value="reciente">Más recientes primero</option>
+            <option value="antiguo">Más antiguas primero</option>
+          </select>
+        </div>
 
-    <div id="listaCategoriasPedidos"></div>
+        <div id="listaCategoriasPedidos"></div>
+      </div>
+    </div>
   </section>
 
 </div>
@@ -1416,6 +1534,9 @@ const state = {
   ordenCategoriasPedidos: "alfabetico", // alfabetico | reciente | antiguo
   columnasTemp: [], // columnas siendo armadas en el formulario de categoría (compartido, un formulario a la vez)
   categoriaFormContexto: null, // 'producto' | 'pedido' — desde dónde se abrió el formulario de categoría
+  modoVistaProductos: "categorias", // categorias | todo
+  modoVistaPedidos: "categorias", // categorias | todo
+  pendingReturnToItemForm: null, // 'producto' | 'pedido' | null — al crear una categoría desde "Nuevo producto/pedido", volver al formulario de item con la categoría recién creada
   proveedores: [],
 };
 
@@ -2007,46 +2128,76 @@ function buscarFilaProductoPorId(id) {
 const SVG_CONFIG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`;
 
 // ---------- productos: render (todas las categorías, cada una con su lista de tarjetas) ----------
+function filaProductoHtml(cat, f, incluirTipo) {
+  const valores = f.valores || {};
+  const titulo = tituloDeFila(cat, f, "producto");
+  const costo = parseFloat(valores[CAMPO_COSTO]) || 0;
+  const precio = parseFloat(valores[CAMPO_VENTA]) || 0;
+  let gananciaHtml = "";
+  if (costo > 0 || precio > 0) {
+    const margen = precio - costo;
+    const pct = costo > 0 ? Math.round((margen / costo) * 100) : null;
+    gananciaHtml = `<div class="producto-margen ${margen >= 0 ? "positiva" : "negativa"}">Costo ${formatoMoneda(costo)} · Ganancia ${formatoMoneda(margen)}${pct !== null ? ` (${pct}%)` : ""}</div>`;
+  }
+  return `
+  <tr class="card" data-id="${f.id}" data-categoria-id="${cat.id}">
+    ${incluirTipo ? `<td class="tipo-cell">${escapeHtml(cat.nombre)}</td>` : ""}
+    <td class="wrap"><div class="titulo-fila">${escapeHtml(titulo)}</div>${gananciaHtml}</td>
+    <td class="num">${formatoMoneda(precio)}</td>
+    <td class="num">
+      <div class="stock-mini">
+        <button type="button" class="btn-stock-menos-fila">−</button>
+        <span class="n num">${f.stock}</span>
+        <button type="button" class="btn-stock-mas-fila">+</button>
+      </div>
+    </td>
+    <td>
+      <div class="btns-fila">
+        <button class="ghost btn-editar-item-producto">Editar</button>
+        <button class="ghost btn-vender-producto-fila"${f.stock <= 0 ? " disabled" : ""}>Vender</button>
+        <button class="ghost btn-borrar-producto-fila">Borrar</button>
+      </div>
+    </td>
+  </tr>`;
+}
+
+// fila con una columna por cada campo propio del tipo (en vez de fusionar todo en "Producto"),
+// usada en la vista "Por tipo" donde todas las filas comparten las mismas columnas
+function filaProductoPorCampoHtml(cat, cols, f) {
+  const valores = f.valores || {};
+  const costo = parseFloat(valores[CAMPO_COSTO]) || 0;
+  const precio = parseFloat(valores[CAMPO_VENTA]) || 0;
+  return `
+  <tr class="card" data-id="${f.id}" data-categoria-id="${cat.id}">
+    ${cols.map((c) => `<td class="wrap">${escapeHtml(valores[c] || "—")}</td>`).join("")}
+    <td class="num">${formatoMoneda(costo)}</td>
+    <td class="num">${formatoMoneda(precio)}</td>
+    <td class="num">
+      <div class="stock-mini">
+        <button type="button" class="btn-stock-menos-fila">−</button>
+        <span class="n num">${f.stock}</span>
+        <button type="button" class="btn-stock-mas-fila">+</button>
+      </div>
+    </td>
+    <td>
+      <div class="btns-fila">
+        <button class="ghost btn-editar-item-producto">Editar</button>
+        <button class="ghost btn-vender-producto-fila"${f.stock <= 0 ? " disabled" : ""}>Vender</button>
+        <button class="ghost btn-borrar-producto-fila">Borrar</button>
+      </div>
+    </td>
+  </tr>`;
+}
+
 function construirBloqueCategoriaProducto(cat) {
   const filas = ordenarFilasPorTitulo(state.itemsFilasPorCategoria[cat.id] || [], cat, "producto");
+  const cols = columnasVisiblesProducto(cat);
 
-  const listaHtml = filas.length
-    ? filas
-        .map((f) => {
-          const valores = f.valores || {};
-          const titulo = tituloDeFila(cat, f, "producto");
-          const costo = parseFloat(valores[CAMPO_COSTO]) || 0;
-          const precio = parseFloat(valores[CAMPO_VENTA]) || 0;
-          let gananciaHtml = "";
-          if (costo > 0 || precio > 0) {
-            const margen = precio - costo;
-            const pct = costo > 0 ? Math.round((margen / costo) * 100) : null;
-            gananciaHtml = `<div class="producto-margen ${margen >= 0 ? "positiva" : "negativa"}">Costo ${formatoMoneda(costo)} · Ganancia ${formatoMoneda(margen)}${pct !== null ? ` (${pct}%)` : ""}</div>`;
-          }
-          return `
-          <div class="card" data-id="${f.id}">
-            <div class="top-row">
-              <div class="main">
-                <div class="cliente">${escapeHtml(titulo)}</div>
-                ${gananciaHtml}
-              </div>
-              <div class="monto num">${formatoMoneda(precio)}</div>
-            </div>
-            <div class="stock-row">
-              <div class="stock-controls">
-                <button type="button" class="btn-stock-menos-fila">−</button>
-                <span class="n num">${f.stock}</span>
-                <button type="button" class="btn-stock-mas-fila">+</button>
-              </div>
-              <div class="btns">
-                <button class="ghost btn-editar-item-producto">Editar</button>
-                <button class="ghost btn-vender-producto-fila"${f.stock <= 0 ? " disabled" : ""}>Vender</button>
-                <button class="ghost btn-borrar-producto-fila">Borrar</button>
-              </div>
-            </div>
-          </div>`;
-        })
-        .join("")
+  const tablaHtml = filas.length
+    ? `<div class="tabla-wrap"><table class="tabla-items">
+        <thead><tr>${cols.map((c) => `<th>${escapeHtml(c)}</th>`).join("") || "<th>Producto</th>"}<th class="num">Costo</th><th class="num">Venta</th><th class="num">Stock</th><th>Acciones</th></tr></thead>
+        <tbody>${filas.map((f) => (cols.length ? filaProductoPorCampoHtml(cat, cols, f) : filaProductoHtml(cat, f, false))).join("")}</tbody>
+      </table></div><div class="tabla-scroll-hint">‹ Deslizá para ver más ›</div>`
     : `<div class="empty">Todavía no cargaste productos en esta categoría.</div>`;
 
   return `
@@ -2059,14 +2210,58 @@ function construirBloqueCategoriaProducto(cat) {
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
       Nuevo producto
     </button>
-    <div class="list">${listaHtml}</div>
+    ${tablaHtml}
   </div>`;
 }
 
+// vista consolidada: todos los productos de todas las categorías en una sola tabla
+function construirTablaTodosProductos() {
+  const termino = normalizar(state.busquedaCategoriasProductos);
+  let filas = [];
+  state.itemsCategorias.forEach((cat) => {
+    const filasCat = ordenarFilasPorTitulo(state.itemsFilasPorCategoria[cat.id] || [], cat, "producto");
+    filasCat.forEach((f) => filas.push({ cat, f }));
+  });
+  if (termino) {
+    filas = filas.filter(({ cat, f }) => normalizar(cat.nombre + " " + tituloDeFila(cat, f, "producto")).includes(termino));
+  }
+  filas.sort((a, b) => a.cat.nombre.localeCompare(b.cat.nombre, "es") || tituloDeFila(a.cat, a.f, "producto").localeCompare(tituloDeFila(b.cat, b.f, "producto"), "es"));
+
+  if (!filas.length) {
+    return `<div class="empty">${termino ? `No se encontró nada para "${escapeHtml(state.busquedaCategoriasProductos)}".` : "Todavía no cargaste ningún producto."}</div>`;
+  }
+  return `<div class="tabla-wrap"><table class="tabla-items">
+      <thead><tr><th>Tipo</th><th>Producto</th><th class="num">Venta</th><th class="num">Stock</th><th>Acciones</th></tr></thead>
+      <tbody>${filas.map(({ cat, f }) => filaProductoHtml(cat, f, true)).join("")}</tbody>
+    </table></div><div class="tabla-scroll-hint">‹ Deslizá para ver más ›</div>`;
+}
+
+// menú lateral de tipos (Cámaras, Cadenas, etc.): tocar uno filtra la lista a ese tipo
+function renderTiposLateralProductos() {
+  const cont = $("#tiposLateralProductos");
+  if (!cont) return;
+  const enTodo = state.modoVistaProductos === "todo";
+  const activo = normalizar(state.busquedaCategoriasProductos);
+  const botones = [
+    `<button type="button" data-tipo="__todo__" class="${enTodo ? "active" : ""}">Todos los productos</button>`,
+    ...state.itemsCategorias.map(
+      (c) =>
+        `<button type="button" data-tipo="${escapeHtml(c.nombre)}" class="${!enTodo && normalizar(c.nombre) === activo ? "active" : ""}">${escapeHtml(c.nombre)}</button>`
+    ),
+    `<button type="button" class="tipo-lateral-nuevo" data-tipo="__nuevo__">＋ Nuevo producto</button>`,
+  ];
+  cont.innerHTML = botones.join("");
+}
+
 function renderTodosProductos() {
+  renderTiposLateralProductos();
   const cont = $("#listaCategoriasProductos");
   if (state.itemsCategorias.length === 0) {
     cont.innerHTML = `<div class="empty">Todavía no creaste ninguna categoría de producto.</div>`;
+    return;
+  }
+  if (state.modoVistaProductos === "todo") {
+    cont.innerHTML = construirTablaTodosProductos();
     return;
   }
   const termino = normalizar(state.busquedaCategoriasProductos);
@@ -2075,6 +2270,27 @@ function renderTodosProductos() {
     ? categorias.map((cat) => construirBloqueCategoriaProducto(cat)).join("")
     : `<div class="empty">No se encontró ninguna categoría para "${escapeHtml(state.busquedaCategoriasProductos)}".</div>`;
 }
+
+$("#tiposLateralProductos").addEventListener("click", (e) => {
+  const btn = e.target.closest("button[data-tipo]");
+  if (!btn) return;
+  const val = btn.dataset.tipo;
+  if (val === "__nuevo__") {
+    abrirNuevoProductoGlobal();
+    return;
+  }
+  if (val === "__todo__") {
+    state.modoVistaProductos = "todo";
+    state.busquedaCategoriasProductos = "";
+    $("#buscarCategoriaProducto").value = "";
+    renderTodosProductos();
+    return;
+  }
+  state.modoVistaProductos = "categorias";
+  state.busquedaCategoriasProductos = val;
+  $("#buscarCategoriaProducto").value = val;
+  renderTodosProductos();
+});
 
 // arma la lista de columnas compartidas (custom) con sus toggles "Prod" / "Ped",
 // tanto en el formulario de Productos como en el de Pedidos (ambos comparten state.columnasTemp)
@@ -2097,11 +2313,16 @@ function renderColumnasChips() {
 }
 
 async function agregarColumnaNueva(ambitoPorDefecto) {
-  const nombre = await confirmarAccion("¿Cómo se llama la columna nueva?", "Agregar", "Cancelar", {
-    pedirTexto: true,
-    placeholder: "Ej: Rodado, Talle...",
-  });
-  if (!nombre) return;
+  // el nombre se toma directamente del campo visible del formulario (antes se pedía
+  // de nuevo en un cartelito aparte, desconectado de lo que el usuario ya había escrito,
+  // lo que hacía que la columna se perdiera en silencio si no se completaba ese segundo cartel)
+  const inputId = ambitoPorDefecto === "producto" ? "#inputNuevaColumnaProducto" : "#inputNuevaColumna";
+  const input = $(inputId);
+  const nombre = (input.value || "").trim();
+  if (!nombre) {
+    input.focus();
+    return;
+  }
   if (esCampoFijo(nombre)) {
     mostrarError(`"${nombre}" ya es una columna fija, no hace falta agregarla.`);
     return;
@@ -2114,6 +2335,7 @@ async function agregarColumnaNueva(ambitoPorDefecto) {
     nuevaCol[ambitoPorDefecto] = true;
     state.columnasTemp.push(nuevaCol);
   }
+  input.value = "";
   renderColumnasChips();
 }
 
@@ -2205,37 +2427,40 @@ function opcionesProveedor(valorActual) {
 }
 
 // ---------- pedidos a proveedores: render (todas las categorías, cada una con su lista de tarjetas) ----------
+function filaPedidoHtml(cat, f, incluirTipo) {
+  const valores = f.valores || {};
+  const titulo = tituloDeFila(cat, f, "pedido");
+  const cantidad = valores[CAMPO_CANTIDAD] || "—";
+  const proveedor = valores[CAMPO_PROVEEDOR] || "—";
+  const devolucion = valores[CAMPO_DEVOLUCION] || "";
+  const badgeClass = f.pedido ? "pagado" : "pendiente";
+  const badgeTxt = f.pedido ? "Pedido" : "Pendiente";
+  return `
+  <tr class="card" data-id="${f.id}" data-categoria-id="${cat.id}">
+    ${incluirTipo ? `<td class="tipo-cell">${escapeHtml(cat.nombre)}</td>` : ""}
+    <td class="wrap"><div class="titulo-fila">${escapeHtml(titulo)}</div><span class="badge ${badgeClass}">${badgeTxt}</span></td>
+    <td class="num">${escapeHtml(cantidad)}</td>
+    <td class="wrap">${escapeHtml(proveedor)}</td>
+    <td class="num">${devolucion ? escapeHtml(devolucion) : "—"}</td>
+    <td>
+      <div class="btns-fila">
+        <button class="ghost btn-toggle-pedido">${f.pedido ? "Pendiente" : "Marcar pedido"}</button>
+        ${f.pedido ? `<button class="ghost btn-recibido-pedido">Recibido</button>` : ""}
+        <button class="ghost btn-editar-item-pedido">Editar</button>
+        <button class="ghost btn-borrar-pedido">Borrar</button>
+      </div>
+    </td>
+  </tr>`;
+}
+
 function construirBloqueCategoria(cat) {
   const items = ordenarFilasPorTitulo(state.itemsFilasPorCategoria[cat.id] || [], cat, "pedido");
 
-  const listaHtml = items.length
-    ? items
-        .map((f) => {
-          const valores = f.valores || {};
-          const titulo = tituloDeFila(cat, f, "pedido");
-          const cantidad = valores[CAMPO_CANTIDAD] || "—";
-          const proveedor = valores[CAMPO_PROVEEDOR] || "—";
-          const devolucion = valores[CAMPO_DEVOLUCION] || "";
-          const badgeClass = f.pedido ? "pagado" : "pendiente";
-          const badgeTxt = f.pedido ? "Pedido" : "Pendiente";
-          return `
-          <div class="card" data-id="${f.id}">
-            <div class="top-row">
-              <div class="main">
-                <div class="cliente">${escapeHtml(titulo)}</div>
-                <div class="desc">Cantidad: ${escapeHtml(cantidad)} · Proveedor: ${escapeHtml(proveedor)}${devolucion ? ` · Devolución: ${escapeHtml(devolucion)}` : ""}</div>
-              </div>
-            </div>
-            <div class="badges-row"><span class="badge ${badgeClass}">${badgeTxt}</span></div>
-            <div class="btns">
-              <button class="ghost btn-toggle-pedido">${f.pedido ? "Marcar pendiente" : "Marcar pedido"}</button>
-              ${f.pedido ? `<button class="ghost btn-recibido-pedido">Recibido</button>` : ""}
-              <button class="ghost btn-editar-item-pedido">Editar</button>
-              <button class="ghost btn-borrar-pedido">Borrar</button>
-            </div>
-          </div>`;
-        })
-        .join("")
+  const tablaHtml = items.length
+    ? `<div class="tabla-wrap"><table class="tabla-items">
+        <thead><tr><th>Producto</th><th class="num">Cant.</th><th>Proveedor</th><th class="num">Devol.</th><th>Acciones</th></tr></thead>
+        <tbody>${items.map((f) => filaPedidoHtml(cat, f, false)).join("")}</tbody>
+      </table></div><div class="tabla-scroll-hint">‹ Deslizá para ver más ›</div>`
     : `<div class="empty">No hay pedidos para mostrar.</div>`;
 
   return `
@@ -2248,14 +2473,68 @@ function construirBloqueCategoria(cat) {
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
       Nuevo pedido
     </button>
-    <div class="list">${listaHtml}</div>
+    ${tablaHtml}
   </div>`;
 }
 
+// vista consolidada: todos los pedidos de todas las categorías en una sola tabla
+function construirTablaTodosPedidos() {
+  const termino = normalizar(state.busquedaCategoriasPedidos);
+  let filas = [];
+  state.itemsCategorias.forEach((cat) => {
+    const items = ordenarFilasPorTitulo(state.itemsFilasPorCategoria[cat.id] || [], cat, "pedido");
+    items.forEach((f) => filas.push({ cat, f }));
+  });
+  if (termino) {
+    filas = filas.filter(({ cat, f }) => normalizar(cat.nombre + " " + tituloDeFila(cat, f, "pedido")).includes(termino));
+  }
+  switch (state.ordenCategoriasPedidos) {
+    case "reciente":
+      filas.sort((a, b) => new Date(b.f.created_at) - new Date(a.f.created_at));
+      break;
+    case "antiguo":
+      filas.sort((a, b) => new Date(a.f.created_at) - new Date(b.f.created_at));
+      break;
+    default:
+      filas.sort((a, b) => a.cat.nombre.localeCompare(b.cat.nombre, "es") || tituloDeFila(a.cat, a.f, "pedido").localeCompare(tituloDeFila(b.cat, b.f, "pedido"), "es"));
+  }
+
+  if (!filas.length) {
+    return `<div class="empty">${termino ? `No se encontró nada para "${escapeHtml(state.busquedaCategoriasPedidos)}".` : "Todavía no hay pedidos cargados."}</div>`;
+  }
+  return `<div class="tabla-wrap"><table class="tabla-items">
+      <thead><tr><th>Tipo</th><th>Producto</th><th class="num">Cant.</th><th>Proveedor</th><th class="num">Devol.</th><th>Acciones</th></tr></thead>
+      <tbody>${filas.map(({ cat, f }) => filaPedidoHtml(cat, f, true)).join("")}</tbody>
+    </table></div><div class="tabla-scroll-hint">‹ Deslizá para ver más ›</div>`;
+}
+
+// menú lateral de tipos para Pedidos: tocar uno filtra la lista a ese tipo
+function renderTiposLateralPedidos() {
+  const cont = $("#tiposLateralPedidos");
+  if (!cont) return;
+  const enTodo = state.modoVistaPedidos === "todo";
+  const activo = normalizar(state.busquedaCategoriasPedidos);
+  const botones = [
+    `<button type="button" data-tipo="__todo__" class="${enTodo ? "active" : ""}">Todos los pedidos</button>`,
+    ...state.itemsCategorias.map(
+      (c) =>
+        `<button type="button" data-tipo="${escapeHtml(c.nombre)}" class="${!enTodo && normalizar(c.nombre) === activo ? "active" : ""}">${escapeHtml(c.nombre)}</button>`
+    ),
+    `<button type="button" class="tipo-lateral-nuevo" data-tipo="__nuevo__">＋ Nuevo pedido</button>`,
+  ];
+  cont.innerHTML = botones.join("");
+}
+
 function renderTodosPedidos() {
+  renderTiposLateralPedidos();
   const cont = $("#listaCategoriasPedidos");
   if (state.itemsCategorias.length === 0) {
     cont.innerHTML = `<div class="empty">Todavía no creaste ninguna categoría de pedidos.</div>`;
+    return;
+  }
+
+  if (state.modoVistaPedidos === "todo") {
+    cont.innerHTML = construirTablaTodosPedidos();
     return;
   }
 
@@ -2333,12 +2612,29 @@ function abrirFormularioCategoria(categoria) {
   $("#panelFormCategoria").scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 
-$("#btnNuevaCategoriaPedido").addEventListener("click", () => {
-  if (!$("#panelFormCategoria").hasAttribute("hidden")) prepararFormularioCategoria(null, "pedido");
-});
-
 $("#buscarCategoriaPedido").addEventListener("input", (e) => {
   state.busquedaCategoriasPedidos = e.target.value;
+  renderTodosPedidos();
+});
+
+$("#tiposLateralPedidos").addEventListener("click", (e) => {
+  const btn = e.target.closest("button[data-tipo]");
+  if (!btn) return;
+  const val = btn.dataset.tipo;
+  if (val === "__nuevo__") {
+    abrirNuevoPedidoGlobal();
+    return;
+  }
+  if (val === "__todo__") {
+    state.modoVistaPedidos = "todo";
+    state.busquedaCategoriasPedidos = "";
+    $("#buscarCategoriaPedido").value = "";
+    renderTodosPedidos();
+    return;
+  }
+  state.modoVistaPedidos = "categorias";
+  state.busquedaCategoriasPedidos = val;
+  $("#buscarCategoriaPedido").value = val;
   renderTodosPedidos();
 });
 
@@ -2356,15 +2652,22 @@ $("#formCategoria").addEventListener("submit", async (e) => {
 
   const payload = { nombre, columnas: state.columnasTemp };
 
-  const { error } = editId
-    ? await supabaseClient.from("elcoya_items_categorias").update(payload).eq("id", editId)
-    : await supabaseClient.from("elcoya_items_categorias").insert(payload);
+  const { data: catGuardada, error } = editId
+    ? await supabaseClient.from("elcoya_items_categorias").update(payload).eq("id", editId).select().single()
+    : await supabaseClient.from("elcoya_items_categorias").insert(payload).select().single();
   if (error) return mostrarError("No se pudo guardar la categoría: " + error.message);
 
   form.reset();
   prepararFormularioCategoria(null, "pedido");
   $("#panelFormCategoria").setAttribute("hidden", "");
   await cargarItemsCompleto();
+
+  const volverAlItem = state.pendingReturnToItemForm === "pedido";
+  state.pendingReturnToItemForm = null;
+  if (volverAlItem && catGuardada) {
+    const categoria = state.itemsCategorias.find((c) => c.id === catGuardada.id);
+    if (categoria) abrirFormularioItemPedido(categoria, null, true);
+  }
 });
 
 // borra una categoría completa (y todas sus filas); es la misma tabla en Productos y Pedidos, así que borra de los dos lados
@@ -2400,7 +2703,7 @@ $("#listaCategoriasPedidos").addEventListener("click", async (e) => {
   const card = e.target.closest(".card[data-id]");
   if (card) {
     const bloque = e.target.closest(".categoria-block");
-    const catId = bloque ? bloque.dataset.categoriaId : null;
+    const catId = bloque ? bloque.dataset.categoriaId : card.dataset.categoriaId;
     const id = card.dataset.id;
     const filaData = (state.itemsFilasPorCategoria[catId] || []).find((f) => f.id === id);
     if (!filaData) return;
@@ -2475,18 +2778,47 @@ $("#listaCategoriasPedidos").addEventListener("click", async (e) => {
 });
 
 // ---------- pedidos: formulario dinámico de Nuevo/Editar pedido ----------
-function abrirFormularioItemPedido(categoria, fila) {
+function abrirFormularioItemPedido(categoria, fila, permitirElegirTipo) {
   const columnas = [...columnasVisiblesPedido(categoria), CAMPO_CANTIDAD, CAMPO_PROVEEDOR, CAMPO_DEVOLUCION];
   const form = $("#formItemPedido");
-  form.fila_id.value = fila ? fila.id : "";
+  const esEdicion = !!(fila && fila.id);
+  form.fila_id.value = esEdicion ? fila.id : "";
   form.categoria_id.value = categoria.id;
   generarCamposItem("#camposItemPedido", columnas, fila ? fila.valores : null, CAMPO_PROVEEDOR);
-  $("#panelFormItemPedidoTitulo").textContent = fila ? `Editar pedido — ${categoria.nombre}` : `Nuevo pedido — ${categoria.nombre}`;
-  $("#btnGuardarItemPedido").textContent = fila ? "Guardar cambios" : "Guardar";
+
+  if (permitirElegirTipo) {
+    $("#wrapTipoItemPedido").removeAttribute("hidden");
+    const opciones = state.itemsCategorias
+      .map((c) => `<option value="${c.id}" ${c.id === categoria.id ? "selected" : ""}>${escapeHtml(c.nombre)}</option>`)
+      .join("");
+    $("#selectTipoItemPedido").innerHTML = opciones + `<option value="__nuevo__">+ Crear tipo nuevo…</option>`;
+  } else {
+    $("#wrapTipoItemPedido").setAttribute("hidden", "");
+  }
+
+  $("#panelFormItemPedidoTitulo").textContent = esEdicion ? `Editar pedido — ${categoria.nombre}` : `Nuevo pedido — ${categoria.nombre}`;
+  $("#btnGuardarItemPedido").textContent = esEdicion ? "Guardar cambios" : "Guardar";
   $("#panelFormItemPedido").removeAttribute("hidden");
-  $("#camposItemPedido input, #camposItemPedido select")[0]?.focus({ preventScroll: true });
+  ($("#wrapTipoItemPedido").hasAttribute("hidden") ? $("#camposItemPedido input, #camposItemPedido select")[0] : $("#selectTipoItemPedido"))?.focus({ preventScroll: true });
   $("#panelFormItemPedido").scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
+
+$("#selectTipoItemPedido").addEventListener("change", (e) => {
+  const val = e.target.value;
+  if (val === "__nuevo__") {
+    $("#panelFormItemPedido").setAttribute("hidden", "");
+    state.pendingReturnToItemForm = "pedido";
+    prepararFormularioCategoria(null, "pedido");
+    $("#panelFormCategoria").removeAttribute("hidden");
+    $("#formCategoria").nombre.focus({ preventScroll: true });
+    $("#panelFormCategoria").scrollIntoView({ behavior: "smooth", block: "nearest" });
+    return;
+  }
+  const categoria = state.itemsCategorias.find((c) => c.id === val);
+  if (categoria) abrirFormularioItemPedido(categoria, null, true);
+});
+
+$("#btnAgregarColumnaItemPedido").addEventListener("click", () => agregarColumnaDesdeItem("pedido"));
 
 // el desplegable de Proveedor dentro del formulario: "+ Nuevo proveedor..." lo crea al vuelo
 $("#camposItemPedido").addEventListener("change", async (e) => {
@@ -2539,9 +2871,22 @@ $("#formItemPedido").addEventListener("submit", async (e) => {
   }
 
   form.reset();
+  $("#wrapTipoItemPedido").setAttribute("hidden", "");
   $("#panelFormItemPedido").setAttribute("hidden", "");
   await cargarItemsCompleto();
 });
+
+function abrirNuevoPedidoGlobal() {
+  if (!state.itemsCategorias.length) {
+    state.pendingReturnToItemForm = "pedido";
+    prepararFormularioCategoria(null, "pedido");
+    $("#panelFormCategoria").removeAttribute("hidden");
+    $("#formCategoria").nombre.focus({ preventScroll: true });
+    $("#panelFormCategoria").scrollIntoView({ behavior: "smooth", block: "nearest" });
+    return;
+  }
+  abrirFormularioItemPedido(state.itemsCategorias[0], null, true);
+}
 
 // ---------- pedidos a proveedores: reporte de compras agrupado por proveedor ----------
 function generarAgrupacionReporte() {
@@ -2893,10 +3238,6 @@ function abrirFormularioCategoriaProducto(categoria) {
   $("#panelFormCategoriaProducto").scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 
-$("#btnNuevaCategoriaProducto").addEventListener("click", () => {
-  if (!$("#panelFormCategoriaProducto").hasAttribute("hidden")) prepararFormularioCategoria(null, "producto");
-});
-
 $("#buscarCategoriaProducto").addEventListener("input", (e) => {
   state.busquedaCategoriasProductos = e.target.value;
   renderTodosProductos();
@@ -2911,15 +3252,22 @@ $("#formCategoriaProducto").addEventListener("submit", async (e) => {
 
   const payload = { nombre, columnas: state.columnasTemp };
 
-  const { error } = editId
-    ? await supabaseClient.from("elcoya_items_categorias").update(payload).eq("id", editId)
-    : await supabaseClient.from("elcoya_items_categorias").insert(payload);
+  const { data: catGuardada, error } = editId
+    ? await supabaseClient.from("elcoya_items_categorias").update(payload).eq("id", editId).select().single()
+    : await supabaseClient.from("elcoya_items_categorias").insert(payload).select().single();
   if (error) return mostrarError("No se pudo guardar la categoría: " + error.message);
 
   form.reset();
   prepararFormularioCategoria(null, "producto");
   $("#panelFormCategoriaProducto").setAttribute("hidden", "");
   await cargarItemsCompleto();
+
+  const volverAlItem = state.pendingReturnToItemForm === "producto";
+  state.pendingReturnToItemForm = null;
+  if (volverAlItem && catGuardada) {
+    const categoria = state.itemsCategorias.find((c) => c.id === catGuardada.id);
+    if (categoria) abrirFormularioItemProducto(categoria, null, true);
+  }
 });
 
 // ---------- productos: clicks dentro de cada bloque de categoría ----------
@@ -2941,7 +3289,7 @@ $("#listaCategoriasProductos").addEventListener("click", async (e) => {
   const card = e.target.closest(".card[data-id]");
   if (card) {
     const bloque = e.target.closest(".categoria-block");
-    const catId = bloque ? bloque.dataset.categoriaId : null;
+    const catId = bloque ? bloque.dataset.categoriaId : card.dataset.categoriaId;
     const id = card.dataset.id;
     const filaData = (state.itemsFilasPorCategoria[catId] || []).find((f) => f.id === id);
     if (!filaData) return;
@@ -2979,17 +3327,105 @@ $("#listaCategoriasProductos").addEventListener("click", async (e) => {
 });
 
 // ---------- productos: formulario dinámico de Nuevo/Editar producto ----------
-function abrirFormularioItemProducto(categoria, fila) {
+function abrirFormularioItemProducto(categoria, fila, permitirElegirTipo) {
   const columnas = [...columnasVisiblesProducto(categoria), CAMPO_COSTO, CAMPO_VENTA];
   const form = $("#formItemProducto");
-  form.fila_id.value = fila ? fila.id : "";
+  const esEdicion = !!(fila && fila.id);
+  form.fila_id.value = esEdicion ? fila.id : "";
   form.categoria_id.value = categoria.id;
   generarCamposItem("#camposItemProducto", columnas, fila ? fila.valores : null);
-  $("#panelFormItemProductoTitulo").textContent = fila ? `Editar producto — ${categoria.nombre}` : `Nuevo producto — ${categoria.nombre}`;
-  $("#btnGuardarItemProducto").textContent = fila ? "Guardar cambios" : "Guardar";
+
+  if (permitirElegirTipo) {
+    $("#wrapTipoItemProducto").removeAttribute("hidden");
+    const opciones = state.itemsCategorias
+      .map((c) => `<option value="${c.id}" ${c.id === categoria.id ? "selected" : ""}>${escapeHtml(c.nombre)}</option>`)
+      .join("");
+    $("#selectTipoItemProducto").innerHTML = opciones + `<option value="__nuevo__">+ Crear tipo nuevo…</option>`;
+  } else {
+    $("#wrapTipoItemProducto").setAttribute("hidden", "");
+  }
+
+  $("#panelFormItemProductoTitulo").textContent = esEdicion ? `Editar producto — ${categoria.nombre}` : `Nuevo producto — ${categoria.nombre}`;
+  $("#btnGuardarItemProducto").textContent = esEdicion ? "Guardar cambios" : "Guardar";
   $("#panelFormItemProducto").removeAttribute("hidden");
-  $("#camposItemProducto input")[0]?.focus({ preventScroll: true });
+  ($("#wrapTipoItemProducto").hasAttribute("hidden") ? $("#camposItemProducto input")[0] : $("#selectTipoItemProducto"))?.focus({ preventScroll: true });
   $("#panelFormItemProducto").scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+$("#selectTipoItemProducto").addEventListener("change", (e) => {
+  const val = e.target.value;
+  if (val === "__nuevo__") {
+    $("#panelFormItemProducto").setAttribute("hidden", "");
+    state.pendingReturnToItemForm = "producto";
+    prepararFormularioCategoria(null, "producto");
+    $("#panelFormCategoriaProducto").removeAttribute("hidden");
+    $("#formCategoriaProducto").nombre.focus({ preventScroll: true });
+    $("#panelFormCategoriaProducto").scrollIntoView({ behavior: "smooth", block: "nearest" });
+    return;
+  }
+  const categoria = state.itemsCategorias.find((c) => c.id === val);
+  if (categoria) abrirFormularioItemProducto(categoria, null, true);
+});
+
+$("#btnAgregarColumnaItemProducto").addEventListener("click", () => agregarColumnaDesdeItem("producto"));
+
+function abrirNuevoProductoGlobal() {
+  if (!state.itemsCategorias.length) {
+    state.pendingReturnToItemForm = "producto";
+    prepararFormularioCategoria(null, "producto");
+    $("#panelFormCategoriaProducto").removeAttribute("hidden");
+    $("#formCategoriaProducto").nombre.focus({ preventScroll: true });
+    $("#panelFormCategoriaProducto").scrollIntoView({ behavior: "smooth", block: "nearest" });
+    return;
+  }
+  abrirFormularioItemProducto(state.itemsCategorias[0], null, true);
+}
+
+// agrega una columna nueva a la categoría del item que se está cargando/editando,
+// sin perder lo que ya se escribió en el formulario (Productos o Pedidos)
+async function agregarColumnaDesdeItem(contexto) {
+  const esProducto = contexto === "producto";
+  const formSel = esProducto ? "#formItemProducto" : "#formItemPedido";
+  const camposSel = esProducto ? "#camposItemProducto" : "#camposItemPedido";
+  const form = $(formSel);
+  const categoriaId = form.categoria_id.value;
+  const categoria = state.itemsCategorias.find((c) => c.id === categoriaId);
+  if (!categoria) return;
+
+  const nombre = await confirmarAccion("¿Cómo se llama la columna nueva?", "Agregar", "Cancelar", {
+    pedirTexto: true,
+    placeholder: "Ej: Rodado, Modelo...",
+  });
+  if (!nombre) return;
+  if (esCampoFijo(nombre)) {
+    mostrarError(`"${nombre}" ya es una columna fija, no hace falta agregarla.`);
+    return;
+  }
+
+  const columnasActuales = columnasDe(categoria).map((c) => ({ ...c }));
+  const existente = columnasActuales.find((c) => normalizar(c.nombre) === normalizar(nombre));
+  if (existente) {
+    existente[contexto] = true;
+  } else {
+    const nueva = { nombre, producto: false, pedido: false };
+    nueva[contexto] = true;
+    columnasActuales.push(nueva);
+  }
+
+  const { error } = await supabaseClient.from("elcoya_items_categorias").update({ columnas: columnasActuales }).eq("id", categoriaId);
+  if (error) return mostrarError("No se pudo agregar la columna: " + error.message);
+  categoria.columnas = columnasActuales; // reflejarlo en memoria sin recargar todo
+
+  // conservar lo que ya se había tipeado antes de regenerar los campos
+  const valoresActuales = {};
+  $$(`${camposSel} [data-campo]`).forEach((el) => {
+    valoresActuales[el.dataset.campo] = el.value;
+  });
+  const filaEnCurso = { id: form.fila_id.value, valores: valoresActuales };
+  const eligiendoTipo = !$(esProducto ? "#wrapTipoItemProducto" : "#wrapTipoItemPedido").hasAttribute("hidden");
+
+  if (esProducto) abrirFormularioItemProducto(categoria, filaEnCurso, eligiendoTipo);
+  else abrirFormularioItemPedido(categoria, filaEnCurso, eligiendoTipo);
 }
 
 $("#formItemProducto").addEventListener("submit", async (e) => {
@@ -3017,6 +3453,7 @@ $("#formItemProducto").addEventListener("submit", async (e) => {
   }
 
   form.reset();
+  $("#wrapTipoItemProducto").setAttribute("hidden", "");
   $("#panelFormItemProducto").setAttribute("hidden", "");
   await cargarItemsCompleto();
 });
