@@ -29,7 +29,7 @@
   --red-bg: rgba(217,88,76,0.12);
   --radius: 12px;
   --nav-h: 64px;
-  --sidebar-w: 220px;
+  --sidebar-w: 176px;
   --tap: 46px; /* alto mínimo táctil */
 }
 
@@ -405,26 +405,53 @@ button.ghost:active{ color: var(--text); }
 
 /* ---------- menú lateral de tipos (Cámaras, Cadenas, etc.) ---------- */
 .vista-con-menu{ display:flex; flex-direction:column; min-width:0; }
+
+.tipos-lateral-toggle{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  width:100%;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 11px 14px;
+  border-radius: 10px;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+.tipos-lateral-toggle svg{ width:18px; height:18px; flex-shrink:0; color: var(--text-dim); }
+.tipos-lateral-toggle .actual{ color: var(--amber); font-weight:600; flex:1; text-align:left; }
+.tipos-lateral-toggle .chev{ transition: transform .15s ease; }
+.tipos-lateral-toggle.abierto .chev{ transform: rotate(180deg); }
+
 .tipos-lateral{
   display:flex;
-  gap:8px;
-  overflow-x:auto;
-  padding: 2px 2px 12px;
-  -ms-overflow-style:none;
-  scrollbar-width:none;
-  -webkit-overflow-scrolling:touch;
+  flex-direction:column;
+  gap:6px;
+  max-height:0;
+  overflow:hidden;
+  opacity:0;
+  transition: max-height .2s ease, opacity .15s ease;
 }
-.tipos-lateral::-webkit-scrollbar{ display:none; }
+.tipos-lateral.abierto{
+  max-height:60vh;
+  overflow-y:auto;
+  opacity:1;
+  padding: 2px 2px 4px;
+  margin-bottom: 10px;
+}
 .tipos-lateral button{
   flex:0 0 auto;
+  width:100%;
+  text-align:left;
   background: var(--panel-2);
   border: 1px solid var(--border);
   color: var(--text-dim);
-  padding: 0 16px;
-  font-size: 13px;
-  min-height: 38px;
-  border-radius: 100px;
-  white-space:nowrap;
+  padding: 10px 14px;
+  font-size: 13.5px;
+  min-height: 40px;
+  border-radius: 8px;
+  white-space:normal;
 }
 .tipos-lateral button.active{
   color: var(--amber);
@@ -440,24 +467,46 @@ button.ghost:active{ color: var(--text); }
 }
 .vista-contenido{ min-width:0; }
 @media (min-width: 960px){
-  .vista-con-menu{ flex-direction:row; align-items:flex-start; gap:18px; }
+  .tipos-lateral-toggle{ display:none; }
+  .vista-con-menu{ flex-direction:row; align-items:flex-start; gap:14px; }
   .tipos-lateral{
+    display:flex !important;
     flex-direction:column;
     overflow:visible;
-    flex: 0 0 180px;
+    max-height:none !important;
+    opacity:1 !important;
+    flex: 0 0 168px;
     position: sticky;
     top: 20px;
     background: var(--panel);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 10px;
+    padding: 8px;
+    gap:5px;
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+    margin-bottom:0;
   }
   .tipos-lateral button{
     width:100%;
     text-align:left;
-    border-radius:8px;
+    border-radius:7px;
+    padding: 0 12px;
+    font-size: 13.5px;
+    min-height: 38px;
+    white-space:normal;
+    line-height:1.3;
   }
-  .vista-contenido{ flex: 1 1 auto; }
+  .vista-contenido{ flex: 1 1 auto; min-width:0; }
+  /* el "sangrado" (margen negativo) del buscador es un truco para celular
+     (compensar el padding de .app); en escritorio .vista-contenido ya es
+     una columna angosta y ese sangrado se metía encima de la columna de tipos */
+  .vista-contenido .search-sort-row.search-sticky{
+    margin-left: 0;
+    margin-right: 0;
+    padding-left: 0;
+    padding-right: 0;
+  }
 }
 
 /* ---------- panel de venta rápida ---------- */
@@ -504,6 +553,9 @@ button:disabled:active{ transform:none; }
 .producto-margen{ font-size:12px; margin-top:4px; }
 .producto-margen.positiva{ color: var(--green); }
 .producto-margen.negativa{ color: var(--red); }
+.ganancia-num{ font-family:'JetBrains Mono', monospace; }
+.ganancia-num.positiva{ color: var(--green); }
+.ganancia-num.negativa{ color: var(--red); }
 
 /* ---------- tabla de productos/pedidos ---------- */
 .tabla-wrap{
@@ -942,6 +994,29 @@ div.card{
 }
 .msg.error{ background: var(--red-bg); color: var(--red); }
 
+/* ---------- botón flotante: Nuevo producto / Nuevo pedido ---------- */
+.fab-nuevo{
+  display:none;
+  position: fixed;
+  right: 18px;
+  bottom: calc(var(--nav-h) + env(safe-area-inset-bottom) + 18px);
+  z-index: 25;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--amber);
+  color: #1b1e21;
+  border: none;
+  align-items:center;
+  justify-content:center;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+}
+.fab-nuevo.visible{ display:flex; }
+.fab-nuevo svg{ width:26px; height:26px; }
+@media (min-width: 960px){
+  .fab-nuevo{ right: 28px; bottom: 28px; }
+}
+
 /* ---------- nav inferior fija ---------- */
 nav.bottom-nav{
   position: fixed;
@@ -1018,21 +1093,21 @@ nav.bottom-nav .inner{
   .sidebar-brand{
     display:flex;
     align-items:center;
-    gap:10px;
-    padding: 14px 20px 14px;
+    gap:8px;
+    padding: 14px 14px 14px;
     border-bottom: 1px solid var(--border);
   }
-  .sidebar-brand svg{ width:28px; height:28px; flex-shrink:0; }
+  .sidebar-brand svg{ width:24px; height:24px; flex-shrink:0; }
   .sidebar-brand strong{
     display:block;
     font-family:'Oswald', sans-serif;
     font-weight:700;
-    font-size: 15px;
+    font-size: 13.5px;
     text-transform:uppercase;
     letter-spacing:0.03em;
     color: var(--text);
   }
-  .sidebar-brand small{ display:block; font-size:11px; color: var(--text-dim); margin-top:1px; }
+  .sidebar-brand small{ display:block; font-size:10.5px; color: var(--text-dim); margin-top:1px; }
 
   nav.bottom-nav .inner{
     max-width:none;
@@ -1040,23 +1115,25 @@ nav.bottom-nav .inner{
     height:auto;
     flex-direction:column;
     gap:2px;
-    padding: 14px 12px;
+    padding: 14px 8px;
   }
   .nav-btn{
     flex:none;
     flex-direction:row;
     justify-content:flex-start;
-    gap:12px;
-    padding: 11px 12px;
+    gap:10px;
+    padding: 10px 10px;
     border-radius: 8px;
     min-height:auto;
   }
   .nav-btn.active{ background: rgba(227,167,46,0.08); }
-  .nav-btn svg{ width:19px; height:19px; }
-  .nav-btn span{ font-size:12.5px; }
+  .nav-btn svg{ width:18px; height:18px; }
+  .nav-btn span{ font-size:12px; }
 
   .app{
-    max-width: 1080px;
+    max-width: 1600px;
+    width: calc(100vw - var(--sidebar-w));
+    box-sizing: border-box;
     margin: 0 0 0 var(--sidebar-w);
     padding: 20px 40px 60px;
   }
@@ -1270,6 +1347,11 @@ nav.bottom-nav .inner{
 
     <div id="subvistaInventario" class="subview active">
       <div class="vista-con-menu">
+        <button type="button" class="tipos-lateral-toggle" id="toggleTiposProductos" aria-expanded="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+          <span class="actual" id="toggleTiposProductosTexto">Todos los productos</span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
         <div class="tipos-lateral" id="tiposLateralProductos"></div>
         <div class="vista-contenido">
           <div class="search-sort-row search-sticky">
@@ -1399,6 +1481,11 @@ nav.bottom-nav .inner{
     </div>
 
     <div class="vista-con-menu">
+      <button type="button" class="tipos-lateral-toggle" id="toggleTiposPedidos" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        <span class="actual" id="toggleTiposPedidosTexto">Todos los pedidos</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
       <div class="tipos-lateral" id="tiposLateralPedidos"></div>
       <div class="vista-contenido">
         <div class="search-sort-row search-sticky">
@@ -1462,6 +1549,10 @@ nav.bottom-nav .inner{
     </button>
   </div>
 </nav>
+
+<button type="button" class="fab-nuevo" id="fabNuevo" aria-label="Nuevo producto" title="Nuevo producto">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+</button>
 
 <div id="gatePin" class="gate-overlay">
   <div class="gate-card">
@@ -2128,6 +2219,14 @@ function buscarFilaProductoPorId(id) {
 const SVG_CONFIG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`;
 
 // ---------- productos: render (todas las categorías, cada una con su lista de tarjetas) ----------
+// texto de la celda de ganancia (venta - costo), con color según sea positiva o negativa
+function gananciaCeldaHtml(costo, precio) {
+  const margen = precio - costo;
+  const pct = costo > 0 ? Math.round((margen / costo) * 100) : null;
+  const clase = margen >= 0 ? "positiva" : "negativa";
+  return `<span class="ganancia-num ${clase}">${formatoMoneda(margen)}${pct !== null ? ` (${pct}%)` : ""}</span>`;
+}
+
 function filaProductoHtml(cat, f, incluirTipo) {
   const valores = f.valores || {};
   const titulo = tituloDeFila(cat, f, "producto");
@@ -2161,6 +2260,36 @@ function filaProductoHtml(cat, f, incluirTipo) {
   </tr>`;
 }
 
+// fila para un tipo sin columnas propias (usa el mismo formato de columnas fijas
+// que filaProductoPorCampoHtml, pero sin columnas de campo)
+function filaProductoSinColumnasHtml(cat, f) {
+  const valores = f.valores || {};
+  const titulo = tituloDeFila(cat, f, "producto");
+  const costo = parseFloat(valores[CAMPO_COSTO]) || 0;
+  const precio = parseFloat(valores[CAMPO_VENTA]) || 0;
+  return `
+  <tr class="card" data-id="${f.id}" data-categoria-id="${cat.id}">
+    <td class="wrap">${escapeHtml(titulo)}</td>
+    <td class="num">${formatoMoneda(costo)}</td>
+    <td class="num">${formatoMoneda(precio)}</td>
+    <td class="num">${gananciaCeldaHtml(costo, precio)}</td>
+    <td class="num">
+      <div class="stock-mini">
+        <button type="button" class="btn-stock-menos-fila">−</button>
+        <span class="n num">${f.stock}</span>
+        <button type="button" class="btn-stock-mas-fila">+</button>
+      </div>
+    </td>
+    <td>
+      <div class="btns-fila">
+        <button class="ghost btn-editar-item-producto">Editar</button>
+        <button class="ghost btn-vender-producto-fila"${f.stock <= 0 ? " disabled" : ""}>Vender</button>
+        <button class="ghost btn-borrar-producto-fila">Borrar</button>
+      </div>
+    </td>
+  </tr>`;
+}
+
 // fila con una columna por cada campo propio del tipo (en vez de fusionar todo en "Producto"),
 // usada en la vista "Por tipo" donde todas las filas comparten las mismas columnas
 function filaProductoPorCampoHtml(cat, cols, f) {
@@ -2172,6 +2301,7 @@ function filaProductoPorCampoHtml(cat, cols, f) {
     ${cols.map((c) => `<td class="wrap">${escapeHtml(valores[c] || "—")}</td>`).join("")}
     <td class="num">${formatoMoneda(costo)}</td>
     <td class="num">${formatoMoneda(precio)}</td>
+    <td class="num">${gananciaCeldaHtml(costo, precio)}</td>
     <td class="num">
       <div class="stock-mini">
         <button type="button" class="btn-stock-menos-fila">−</button>
@@ -2195,8 +2325,8 @@ function construirBloqueCategoriaProducto(cat) {
 
   const tablaHtml = filas.length
     ? `<div class="tabla-wrap"><table class="tabla-items">
-        <thead><tr>${cols.map((c) => `<th>${escapeHtml(c)}</th>`).join("") || "<th>Producto</th>"}<th class="num">Costo</th><th class="num">Venta</th><th class="num">Stock</th><th>Acciones</th></tr></thead>
-        <tbody>${filas.map((f) => (cols.length ? filaProductoPorCampoHtml(cat, cols, f) : filaProductoHtml(cat, f, false))).join("")}</tbody>
+        <thead><tr>${cols.map((c) => `<th>${escapeHtml(c)}</th>`).join("") || "<th>Producto</th>"}<th class="num">Costo</th><th class="num">Venta</th><th class="num">Ganancia</th><th class="num">Stock</th><th>Acciones</th></tr></thead>
+        <tbody>${filas.map((f) => (cols.length ? filaProductoPorCampoHtml(cat, cols, f) : filaProductoSinColumnasHtml(cat, f))).join("")}</tbody>
       </table></div><div class="tabla-scroll-hint">‹ Deslizá para ver más ›</div>`
     : `<div class="empty">Todavía no cargaste productos en esta categoría.</div>`;
 
@@ -2206,10 +2336,6 @@ function construirBloqueCategoriaProducto(cat) {
       <h2>${escapeHtml(cat.nombre)}</h2>
       <button type="button" class="ghost icon-btn btn-config-categoria-producto" data-categoria="${cat.id}" title="Configurar categoría" aria-label="Configurar categoría">${SVG_CONFIG}</button>
     </div>
-    <button type="button" class="btn-nuevo btn-nuevo-item-producto" data-categoria="${cat.id}">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-      Nuevo producto
-    </button>
     ${tablaHtml}
   </div>`;
 }
@@ -2251,6 +2377,10 @@ function renderTiposLateralProductos() {
     `<button type="button" class="tipo-lateral-nuevo" data-tipo="__nuevo__">＋ Nuevo producto</button>`,
   ];
   cont.innerHTML = botones.join("");
+
+  const categoriaActiva = !enTodo && state.itemsCategorias.find((c) => normalizar(c.nombre) === activo);
+  const texto = $("#toggleTiposProductosTexto");
+  if (texto) texto.textContent = categoriaActiva ? categoriaActiva.nombre : "Todos los productos";
 }
 
 function renderTodosProductos() {
@@ -2275,6 +2405,7 @@ $("#tiposLateralProductos").addEventListener("click", (e) => {
   const btn = e.target.closest("button[data-tipo]");
   if (!btn) return;
   const val = btn.dataset.tipo;
+  cerrarTiposLateral("Productos");
   if (val === "__nuevo__") {
     abrirNuevoProductoGlobal();
     return;
@@ -2291,6 +2422,20 @@ $("#tiposLateralProductos").addEventListener("click", (e) => {
   $("#buscarCategoriaProducto").value = val;
   renderTodosProductos();
 });
+
+// desplegable de tipos en celular: abre/cierra + se cierra solo al elegir una opción
+function cerrarTiposLateral(sufijo) {
+  $("#tiposLateral" + sufijo).classList.remove("abierto");
+  $("#toggleTipos" + sufijo).classList.remove("abierto");
+  $("#toggleTipos" + sufijo).setAttribute("aria-expanded", "false");
+}
+function toggleTiposLateral(sufijo) {
+  const abierto = $("#tiposLateral" + sufijo).classList.toggle("abierto");
+  $("#toggleTipos" + sufijo).classList.toggle("abierto", abierto);
+  $("#toggleTipos" + sufijo).setAttribute("aria-expanded", String(abierto));
+}
+$("#toggleTiposProductos").addEventListener("click", () => toggleTiposLateral("Productos"));
+$("#toggleTiposPedidos").addEventListener("click", () => toggleTiposLateral("Pedidos"));
 
 // arma la lista de columnas compartidas (custom) con sus toggles "Prod" / "Ped",
 // tanto en el formulario de Productos como en el de Pedidos (ambos comparten state.columnasTemp)
@@ -2469,10 +2614,6 @@ function construirBloqueCategoria(cat) {
       <h2>${escapeHtml(cat.nombre)}</h2>
       <button type="button" class="ghost icon-btn btn-config-categoria" data-categoria="${cat.id}" title="Configurar categoría" aria-label="Configurar categoría">${SVG_CONFIG}</button>
     </div>
-    <button type="button" class="btn-nuevo btn-nuevo-item-pedido" data-categoria="${cat.id}">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-      Nuevo pedido
-    </button>
     ${tablaHtml}
   </div>`;
 }
@@ -2523,6 +2664,10 @@ function renderTiposLateralPedidos() {
     `<button type="button" class="tipo-lateral-nuevo" data-tipo="__nuevo__">＋ Nuevo pedido</button>`,
   ];
   cont.innerHTML = botones.join("");
+
+  const categoriaActiva = !enTodo && state.itemsCategorias.find((c) => normalizar(c.nombre) === activo);
+  const texto = $("#toggleTiposPedidosTexto");
+  if (texto) texto.textContent = categoriaActiva ? categoriaActiva.nombre : "Todos los pedidos";
 }
 
 function renderTodosPedidos() {
@@ -2621,6 +2766,7 @@ $("#tiposLateralPedidos").addEventListener("click", (e) => {
   const btn = e.target.closest("button[data-tipo]");
   if (!btn) return;
   const val = btn.dataset.tipo;
+  cerrarTiposLateral("Pedidos");
   if (val === "__nuevo__") {
     abrirNuevoPedidoGlobal();
     return;
@@ -3118,7 +3264,31 @@ $$(".nav-btn").forEach((btn) => {
     $("#" + btn.dataset.view).classList.add("active");
     window.scrollTo({ top: 0, behavior: "smooth" });
     if (btn.dataset.view === "viewEstadisticas") renderEstadisticas();
+    actualizarFabNuevo(btn.dataset.view);
   });
+});
+
+// botón flotante "＋": Nuevo producto en Productos, Nuevo pedido en Pedidos, oculto en el resto
+function actualizarFabNuevo(view) {
+  const fab = $("#fabNuevo");
+  if (view === "viewProductos") {
+    fab.classList.add("visible");
+    fab.setAttribute("aria-label", "Nuevo producto");
+    fab.title = "Nuevo producto";
+  } else if (view === "viewPedidos") {
+    fab.classList.add("visible");
+    fab.setAttribute("aria-label", "Nuevo pedido");
+    fab.title = "Nuevo pedido";
+  } else {
+    fab.classList.remove("visible");
+  }
+}
+actualizarFabNuevo($(".nav-btn.active")?.dataset.view);
+
+$("#fabNuevo").addEventListener("click", () => {
+  const view = $(".nav-btn.active")?.dataset.view;
+  if (view === "viewProductos") abrirNuevoProductoGlobal();
+  else if (view === "viewPedidos") abrirNuevoPedidoGlobal();
 });
 
 // ---------- filtro de período (estadísticas) ----------
