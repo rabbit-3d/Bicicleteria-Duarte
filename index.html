@@ -840,6 +840,23 @@ div.card{
 }
 .icon-btn svg{ width:18px; height:18px; }
 
+.header-btns{ display:flex; gap:8px; align-items:center; flex-shrink:0; }
+.icon-btn-amber{
+  width:38px;
+  height:38px;
+  min-height:0;
+  padding:0;
+  flex:none;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background: var(--amber);
+  color: #1b1e21;
+  border: none;
+  border-radius: 8px;
+}
+.icon-btn-amber svg{ width:19px; height:19px; }
+
 /* ---------- mientras haya CUALQUIER formulario (crear/editar) abierto, ---------- */
 /* ---------- ocultar todo lo demás de esa pantalla y dejar solo el cartel ---------- */
 .view:has(> .form-panel:not([hidden])) > *:not(.form-panel){
@@ -2334,7 +2351,12 @@ function construirBloqueCategoriaProducto(cat) {
   <div class="categoria-block" data-categoria-id="${cat.id}">
     <div class="pedidos-detalle-header">
       <h2>${escapeHtml(cat.nombre)}</h2>
-      <button type="button" class="ghost icon-btn btn-config-categoria-producto" data-categoria="${cat.id}" title="Configurar categoría" aria-label="Configurar categoría">${SVG_CONFIG}</button>
+      <div class="header-btns">
+        <button type="button" class="icon-btn-amber btn-nuevo-item-producto-mini" data-categoria="${cat.id}" title="Nuevo producto en ${escapeHtml(cat.nombre)}" aria-label="Nuevo producto en ${escapeHtml(cat.nombre)}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+        <button type="button" class="ghost icon-btn btn-config-categoria-producto" data-categoria="${cat.id}" title="Configurar categoría" aria-label="Configurar categoría">${SVG_CONFIG}</button>
+      </div>
     </div>
     ${tablaHtml}
   </div>`;
@@ -2612,7 +2634,12 @@ function construirBloqueCategoria(cat) {
   <div class="categoria-block" data-categoria-id="${cat.id}">
     <div class="pedidos-detalle-header">
       <h2>${escapeHtml(cat.nombre)}</h2>
-      <button type="button" class="ghost icon-btn btn-config-categoria" data-categoria="${cat.id}" title="Configurar categoría" aria-label="Configurar categoría">${SVG_CONFIG}</button>
+      <div class="header-btns">
+        <button type="button" class="icon-btn-amber btn-nuevo-item-pedido-mini" data-categoria="${cat.id}" title="Nuevo pedido en ${escapeHtml(cat.nombre)}" aria-label="Nuevo pedido en ${escapeHtml(cat.nombre)}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+        <button type="button" class="ghost icon-btn btn-config-categoria" data-categoria="${cat.id}" title="Configurar categoría" aria-label="Configurar categoría">${SVG_CONFIG}</button>
+      </div>
     </div>
     ${tablaHtml}
   </div>`;
@@ -2839,7 +2866,7 @@ $("#listaCategoriasPedidos").addEventListener("click", async (e) => {
     return;
   }
 
-  const btnNuevoItem = e.target.closest(".btn-nuevo-item-pedido");
+  const btnNuevoItem = e.target.closest(".btn-nuevo-item-pedido-mini");
   if (btnNuevoItem) {
     const categoria = state.itemsCategorias.find((c) => c.id === btnNuevoItem.dataset.categoria);
     if (categoria) abrirFormularioItemPedido(categoria, null);
@@ -3449,7 +3476,7 @@ $("#listaCategoriasProductos").addEventListener("click", async (e) => {
     return;
   }
 
-  const btnNuevoItem = e.target.closest(".btn-nuevo-item-producto");
+  const btnNuevoItem = e.target.closest(".btn-nuevo-item-producto-mini");
   if (btnNuevoItem) {
     const categoria = state.itemsCategorias.find((c) => c.id === btnNuevoItem.dataset.categoria);
     if (categoria) abrirFormularioItemProducto(categoria, null);
