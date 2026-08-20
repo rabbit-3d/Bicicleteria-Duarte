@@ -368,16 +368,16 @@
   /* ---------- sección de contacto + mapa ---------- */
   .contacto-section{
     max-width:1180px; margin:44px auto 0; padding:0 16px;
-    display:grid; grid-template-columns:1fr; gap:22px;
+    display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:22px; align-items:center;
   }
-  @media (min-width:480px){ .contacto-section{ grid-template-columns:1fr 1fr; align-items:center; } }
   .contacto-info h2{ font-size:22px; margin-bottom:4px; }
   .contacto-info > p{ color:var(--ink-soft); font-size:14.5px; margin-bottom:18px; }
   .contacto-dato{ display:flex; gap:12px; margin-top:16px; }
   .contacto-dato svg{ color:var(--amber); flex-shrink:0; margin-top:2px; }
   .contacto-dato strong{ display:block; font-size:14px; margin-bottom:2px; }
   .contacto-dato span{ color:var(--ink-soft); font-size:13.5px; line-height:1.5; }
-  .contacto-mapa{ position:relative; isolation:isolate; }
+  .contacto-info{ min-width:0; }
+  .contacto-mapa{ position:relative; isolation:isolate; min-width:0; }
   #mapaTaller{
     aspect-ratio:1/1; width:100%; max-height:380px;
     border-radius:var(--radius); border:1px solid var(--line); overflow:hidden;
