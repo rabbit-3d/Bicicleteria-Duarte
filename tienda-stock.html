@@ -198,6 +198,15 @@
   .intro h2{ font-size:22px; }
   .intro p{ color:var(--ink-soft); font-size:14.5px; margin-top:4px; }
 
+  /* ---------- bicicletas destacadas (arriba del catálogo general) ---------- */
+  .bicis-destacadas{ margin-bottom:32px; }
+  .bicis-destacadas-head{ margin-bottom:14px; }
+  .bicis-destacadas-head h2{ font-size:20px; }
+  .bicis-destacadas-head p{ color:var(--ink-soft); font-size:13.5px; margin-top:2px; }
+  .bicis-destacadas-scroll{
+    display:grid; grid-template-columns:repeat(auto-fill, minmax(190px, 1fr)); gap:14px;
+  }
+
   .search-row{
     display:flex; align-items:center; gap:8px;
     background:var(--paper-2); border:2px solid var(--line); border-radius:12px;
@@ -298,9 +307,7 @@
   }
 
   /* ---------- grid de bicicletas ---------- */
-  .grid-bicis{ display:grid; grid-template-columns:1fr; gap:16px; }
-  @media (min-width:640px){ .grid-bicis{ grid-template-columns:repeat(2,1fr); } }
-  @media (min-width:920px){ .grid-bicis{ grid-template-columns:repeat(3,1fr); } }
+  .grid-bicis{ display:grid; grid-template-columns:repeat(auto-fill, minmax(190px, 1fr)); gap:14px; }
 
   .bici-card{
     background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
@@ -318,11 +325,11 @@
     background:var(--red); color:#fff; font-size:11.5px; font-weight:700;
     padding:5px 10px; border-radius:100px; text-transform:uppercase; letter-spacing:.03em;
   }
-  .bici-body{ padding:14px 14px 16px; display:flex; flex-direction:column; gap:6px; flex:1; }
+  .bici-body{ padding:12px 12px 14px; display:flex; flex-direction:column; gap:5px; flex:1; }
   .bici-cat-badge{
     align-self:flex-start; background:var(--paper-2); border:1px solid var(--line); color:var(--amber);
-    font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.03em;
-    padding:3px 9px; border-radius:100px; margin-bottom:2px;
+    font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.03em;
+    padding:3px 8px; border-radius:100px; margin-bottom:2px;
   }
   .bici-cond-badge{
     position:absolute; top:10px; left:10px; z-index:1;
@@ -337,11 +344,11 @@
     padding:11px; font-size:14px; font-weight:700; border-radius:10px;
   }
   .condicion-toggle button.active{ color:#211a08; background:var(--amber); border-color:var(--amber); }
-  .bici-titulo{ font-family:'Oswald'; font-weight:600; font-size:16.5px; line-height:1.25; }
-  .bici-precio{ color:var(--amber-dark); font-weight:700; font-size:18px; }
-  .bici-desc{ color:var(--ink-soft); font-size:13.5px; line-height:1.4; flex:1;
+  .bici-titulo{ font-family:'Oswald'; font-weight:600; font-size:14.5px; line-height:1.3; }
+  .bici-precio{ color:var(--amber-dark); font-weight:700; font-size:16px; }
+  .bici-desc{ color:var(--ink-soft); font-size:12.5px; line-height:1.4; flex:1;
     display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
-  .bici-actions{ display:flex; gap:8px; margin-top:8px; }
+  .bici-actions{ display:flex; gap:8px; margin-top:6px; }
   .btn{ border-radius:10px; border:2px solid transparent; padding:10px 14px; font-weight:700; font-size:14px;
     display:inline-flex; align-items:center; justify-content:center; gap:6px; min-height:44px; }
   .btn-primary{ background:var(--amber); color:#211a08; }
@@ -640,6 +647,19 @@
 <main>
   <!-- ============ VISTA PÚBLICA ============ -->
   <div id="vistaPublica">
+    <section class="bicis-destacadas" id="bicisDestacadasSection" hidden>
+      <div class="bicis-destacadas-head">
+        <h2>Bicicletas</h2>
+        <p>Nuevas y usadas, disponibles ahora.</p>
+      </div>
+      <div class="cat-chips" id="filtroCondicionBici">
+        <button type="button" data-cond="" class="active">Todas</button>
+        <button type="button" data-cond="nueva">Nuevas</button>
+        <button type="button" data-cond="usada">Usadas</button>
+      </div>
+      <div class="bicis-destacadas-scroll" id="bicisDestacadasScroll"></div>
+    </section>
+
     <div class="intro" id="catalogo-anchor">
       <h2>Productos disponibles</h2>
       <p>Elegí los que te interesen y consultá directo por WhatsApp.</p>
@@ -648,7 +668,7 @@
     <div class="catalogo-toolbar">
       <div class="catalogo-resultado" id="catalogoResultadoTexto"></div>
       <select id="ordenPublico" class="select-orden-publico">
-        <option value="relevancia">Más relevantes</option>
+        <option value="alfabetico">Alfabético (A-Z)</option>
         <option value="precio-asc">Precio: menor a mayor</option>
         <option value="precio-desc">Precio: mayor a menor</option>
         <option value="nuevos">Recién llegados</option>
@@ -1054,7 +1074,8 @@ const state = {
   esAdmin: false,
   panelAdmin: "productos", // "productos" | "bicicletas"
   categoriaActiva: "",      // filtro público, "" = todas
-  ordenPublico: "relevancia", // relevancia | precio-asc | precio-desc | nuevos
+  ordenPublico: "alfabetico", // alfabetico | precio-asc | precio-desc | nuevos
+  filtroCondicionBici: "", // "" = todas | "nueva" | "usada"
   catalogoPagina: 1,
   catalogoPorPagina: 12,
   categoriaActivaAdmin: "", // filtro en el panel de administrador (productos)
@@ -1471,8 +1492,36 @@ function tarjetasEsqueleto(cantidad) {
   return `<div class="grid-bicis">${una.repeat(cantidad)}</div>`;
 }
 
+function renderBicisDestacadas() {
+  const seccion = $("#bicisDestacadasSection");
+  const cont = $("#bicisDestacadasScroll");
+  if (!seccion || !cont) return;
+  if (state.cargando) { seccion.hidden = true; return; }
+  const todas = bicicletasPublicadas()
+    .map((b) => itemPorClave("b:" + b.id))
+    .filter(Boolean)
+    .sort((a, b) => a.titulo.localeCompare(b.titulo, "es"));
+  if (!todas.length) {
+    seccion.hidden = true;
+    return;
+  }
+  seccion.hidden = false;
+  const items = state.filtroCondicionBici ? todas.filter((x) => x.condicion === state.filtroCondicionBici) : todas;
+  cont.innerHTML = items.length
+    ? items.map(productoCardHtml).join("")
+    : `<div class="empty" style="padding:30px 20px;">No hay bicicletas ${state.filtroCondicionBici === "nueva" ? "nuevas" : "usadas"} por ahora.</div>`;
+}
+$("#filtroCondicionBici").addEventListener("click", (e) => {
+  const btn = e.target.closest("button[data-cond]");
+  if (!btn) return;
+  state.filtroCondicionBici = btn.dataset.cond;
+  $$("#filtroCondicionBici button").forEach((b) => b.classList.toggle("active", b === btn));
+  renderBicisDestacadas();
+});
+
 function renderCatalogo() {
   renderCatChips();
+  renderBicisDestacadas();
   const cont = $("#catalogo");
   const verMasWrap = $("#catalogoVerMasWrap");
   if (state.cargando) {
@@ -1496,6 +1545,9 @@ function renderCatalogo() {
     case "nuevos":
       items.sort((a, b) => new Date(b.creado || 0) - new Date(a.creado || 0));
       break;
+    case "alfabetico":
+    default:
+      items.sort((a, b) => a.titulo.localeCompare(b.titulo, "es"));
   }
 
   const totalTexto = $("#catalogoResultadoTexto");
@@ -1520,9 +1572,23 @@ function renderCatalogo() {
     return;
   }
 
-  const hastaAhora = state.catalogoPagina * state.catalogoPorPagina;
-  const visibles = items.slice(0, hastaAhora);
-  cont.innerHTML = `<div class="grid-bicis">${visibles.map(productoCardHtml).join("")}</div>`;
+  let hastaAhora = Math.min(state.catalogoPagina * state.catalogoPorPagina, items.length);
+  let visibles = items.slice(0, hastaAhora);
+  cont.innerHTML = `<div class="grid-bicis" id="gridCatalogoPrincipal">${visibles.map(productoCardHtml).join("")}</div>`;
+
+  // si todavía queda más por cargar, completar la fila actual en vez de dejarla a medias
+  if (hastaAhora < items.length) {
+    const gridEl = $("#gridCatalogoPrincipal");
+    const columnas = gridEl ? getComputedStyle(gridEl).gridTemplateColumns.split(" ").length : 1;
+    if (columnas > 1 && hastaAhora % columnas !== 0) {
+      const ajustado = Math.min(Math.ceil(hastaAhora / columnas) * columnas, items.length);
+      if (ajustado !== hastaAhora) {
+        hastaAhora = ajustado;
+        visibles = items.slice(0, hastaAhora);
+        cont.innerHTML = `<div class="grid-bicis" id="gridCatalogoPrincipal">${visibles.map(productoCardHtml).join("")}</div>`;
+      }
+    }
+  }
 
   if (verMasWrap) {
     verMasWrap.innerHTML =
