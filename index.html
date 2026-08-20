@@ -1075,6 +1075,7 @@ nav.bottom-nav .inner{
 .nav-btn.active{ color: var(--amber); }
 .nav-btn.active svg circle,
 .nav-btn.active svg path{ stroke: var(--amber); }
+.nav-link-externo{ text-decoration:none; }
 .sidebar-brand{ display:none; }
 
 /* ---------- pantallas anchas: tablet (640–959px) ---------- */
@@ -1564,6 +1565,13 @@ nav.bottom-nav .inner{
       </svg>
       <span>Pedidos</span>
     </button>
+    <a class="nav-btn nav-link-externo" href="tienda-stock.html" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
+        <path d="M3 6h18M16 10a4 4 0 01-8 0"/>
+      </svg>
+      <span>Tienda</span>
+    </a>
   </div>
 </nav>
 
@@ -1724,8 +1732,8 @@ function confirmarAccion(mensaje, textoAceptar = "Aceptar", textoCancelar = "Can
       inputValor.type = opciones.pedirTexto ? "text" : "number";
       inputValor.placeholder = opciones.placeholder || "";
       inputValor.removeAttribute("hidden");
-      inputValor.value = opciones.valorInicial ?? "";
-      if (opciones.pedirNumero) inputValor.min = opciones.min ?? 0;
+      inputValor.value = (opciones.valorInicial === undefined || opciones.valorInicial === null) ? "" : opciones.valorInicial;
+      if (opciones.pedirNumero) inputValor.min = (opciones.min === undefined || opciones.min === null) ? 0 : opciones.min;
     } else {
       inputValor.setAttribute("hidden", "");
     }
@@ -1777,7 +1785,7 @@ function confirmarAccion(mensaje, textoAceptar = "Aceptar", textoCancelar = "Can
 
 function escapeHtml(str) {
   const div = document.createElement("div");
-  div.textContent = str ?? "";
+  div.textContent = (str === undefined || str === null) ? "" : str;
   return div.innerHTML;
 }
 
@@ -1788,7 +1796,8 @@ $$("[data-toggle]").forEach((btn) => {
     const abrir = panel.hasAttribute("hidden");
     panel.toggleAttribute("hidden");
     if (abrir) {
-      panel.querySelector("input")?.focus({ preventScroll: true });
+      var _inputPanel = panel.querySelector("input");
+      if (_inputPanel) _inputPanel.focus({ preventScroll: true });
       panel.scrollIntoView({ behavior: "smooth", block: "nearest" });
     }
   });
@@ -2053,7 +2062,8 @@ function coloresGrafico() {
 }
 
 function vistaEstadisticasActiva() {
-  return $("#viewEstadisticas")?.classList.contains("active");
+  var _ve = $("#viewEstadisticas");
+  return _ve ? _ve.classList.contains("active") : false;
 }
 
 function pintarLeyenda(el, items) {
@@ -2972,7 +2982,8 @@ function abrirFormularioItemPedido(categoria, fila, permitirElegirTipo) {
   $("#panelFormItemPedidoTitulo").textContent = esEdicion ? `Editar pedido — ${categoria.nombre}` : `Nuevo pedido — ${categoria.nombre}`;
   $("#btnGuardarItemPedido").textContent = esEdicion ? "Guardar cambios" : "Guardar";
   $("#panelFormItemPedido").removeAttribute("hidden");
-  ($("#wrapTipoItemPedido").hasAttribute("hidden") ? $("#camposItemPedido input, #camposItemPedido select")[0] : $("#selectTipoItemPedido"))?.focus({ preventScroll: true });
+  var _focoPedido = $("#wrapTipoItemPedido").hasAttribute("hidden") ? $("#camposItemPedido input, #camposItemPedido select")[0] : $("#selectTipoItemPedido");
+  if (_focoPedido) _focoPedido.focus({ preventScroll: true });
   $("#panelFormItemPedido").scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 
@@ -3310,10 +3321,12 @@ function actualizarFabNuevo(view) {
     fab.classList.remove("visible");
   }
 }
-actualizarFabNuevo($(".nav-btn.active")?.dataset.view);
+var _navInicial = $(".nav-btn.active");
+actualizarFabNuevo(_navInicial ? _navInicial.dataset.view : undefined);
 
 $("#fabNuevo").addEventListener("click", () => {
-  const view = $(".nav-btn.active")?.dataset.view;
+  var _navActual = $(".nav-btn.active");
+  const view = _navActual ? _navActual.dataset.view : undefined;
   if (view === "viewProductos") abrirNuevoProductoGlobal();
   else if (view === "viewPedidos") abrirNuevoPedidoGlobal();
 });
@@ -3545,7 +3558,8 @@ function abrirFormularioItemProducto(categoria, fila, permitirElegirTipo) {
   $("#panelFormItemProductoTitulo").textContent = esEdicion ? `Editar producto — ${categoria.nombre}` : `Nuevo producto — ${categoria.nombre}`;
   $("#btnGuardarItemProducto").textContent = esEdicion ? "Guardar cambios" : "Guardar";
   $("#panelFormItemProducto").removeAttribute("hidden");
-  ($("#wrapTipoItemProducto").hasAttribute("hidden") ? $("#camposItemProducto input")[0] : $("#selectTipoItemProducto"))?.focus({ preventScroll: true });
+  var _focoProducto = $("#wrapTipoItemProducto").hasAttribute("hidden") ? $("#camposItemProducto input")[0] : $("#selectTipoItemProducto");
+  if (_focoProducto) _focoProducto.focus({ preventScroll: true });
   $("#panelFormItemProducto").scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 
@@ -3719,7 +3733,7 @@ $("#formVenta").precio_unitario.addEventListener("input", actualizarTotalVenta);
 // (por ejemplo: se borró o se editó ese producto en otra pestaña/dispositivo mientras
 // este formulario estaba abierto). En vez del mensaje técnico, avisamos y refrescamos.
 function esErrorProductoDesactualizado(error) {
-  return error?.code === "23503" || /foreign key/i.test(error?.message || "");
+  return (error && error.code === "23503") || /foreign key/i.test((error && error.message) || "");
 }
 
 async function manejarErrorGuardadoVenta(error) {

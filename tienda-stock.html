@@ -1,0 +1,1607 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=3.0">
+<title>Tienda El Coya · Productos en stock</title>
+<meta name="description" content="Productos en stock de El Coya, a la venta. Consultá por WhatsApp.">
+
+<!-- Favicon (el logo en la pestaña del navegador) -->
+<link rel="icon" href="logo-el-coya-512.png" type="image/png">
+<link rel="apple-touch-icon" href="logo-el-coya-512.png">
+
+<!-- Vista previa al compartir el link (WhatsApp, Facebook, etc.) -->
+<meta property="og:title" content="Tienda El Coya">
+<meta property="og:description" content="Productos en stock de El Coya, a la venta. Consultá por WhatsApp.">
+<meta property="og:image" content="https://TU-DOMINIO-ACA/logo-el-coya-512.png">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --paper:#1b1e21;
+    --paper-2:#23272b;
+    --card:#23272b;
+    --ink:#ece9e2;
+    --ink-soft:#9aa1a7;
+    --line:#383e44;
+    --amber:#e3a72e;
+    --amber-dark:#c78f1e;
+    --green:#6fbf73;
+    --green-bg:rgba(111,191,115,0.12);
+    --red:#d9584c;
+    --red-bg:rgba(217,88,76,0.12);
+    --radius:16px;
+    --shadow: 0 10px 30px -14px rgba(0,0,0,.5);
+    font-size:17px;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; overflow-x:hidden; max-width:100%; }
+  body{
+    background:
+      radial-gradient(900px 500px at 100% -8%, rgba(227,167,46,0.07), transparent 60%),
+      var(--paper);
+    color:var(--ink);
+    font-family:'Inter',system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    padding-bottom:90px;
+  }
+  h1,h2,h3,.display{ font-family:'Oswald',sans-serif; margin:0; }
+  button{ font-family:inherit; cursor:pointer; }
+  button:focus-visible, input:focus-visible, textarea:focus-visible{
+    outline:3px solid var(--amber); outline-offset:2px;
+  }
+  img{ max-width:100%; display:block; }
+
+  /* ---------- header ---------- */
+  .anuncio-bar{
+    background:var(--amber); color:#211a08; text-align:center;
+    font-size:12.5px; font-weight:700; letter-spacing:.02em;
+    padding:7px 10px;
+  }
+  header.top{
+    background:#141619;
+    color:var(--ink);
+    padding:14px 18px;
+    position:sticky; top:0; z-index:20;
+    box-shadow:var(--shadow);
+  }
+  .top-row{ display:flex; align-items:center; gap:16px; max-width:1180px; margin:0 auto; flex-wrap:wrap; }
+  .brand{ display:flex; align-items:center; gap:10px; flex-shrink:0; }
+  .brand-logo{ height:38px; width:auto; flex-shrink:0; }
+  .brand h1{ font-size:19px; color:#fff; letter-spacing:.02em; }
+  .brand .sub{ font-size:12px; color:#D8CDB6; margin-top:1px; }
+  .header-search{
+    flex:1 1 240px; min-width:0; margin:0 !important; background:rgba(255,255,255,.06) !important;
+    border-color:rgba(255,255,255,.14) !important;
+  }
+  .header-search input{ color:#fff; }
+  .header-search input::placeholder{ color:#9aa1a7; }
+  .header-search svg{ color:#9aa1a7; }
+  .btn-admin-toggle{
+    background:rgba(255,255,255,.08);
+    color:#EFE7D6;
+    border:1px solid rgba(255,255,255,.18);
+    padding:8px 12px;
+    border-radius:9px;
+    font-size:12.5px;
+    font-weight:600;
+    display:flex; align-items:center; gap:6px;
+    flex-shrink:0;
+  }
+  .btn-admin-toggle svg{ width:15px; height:15px; }
+
+  @media (max-width:640px){
+    header.top{ padding:12px 14px; }
+    .top-row{ gap:8px; }
+    .brand{ order:1; }
+    .btn-carrito-header{ order:2; margin-left:auto; padding:8px 10px; }
+    .btn-admin-toggle{ order:3; padding:8px 10px; font-size:11.5px; }
+    .header-search{ order:4; flex-basis:100%; }
+    .brand-logo{ height:32px; }
+    .brand h1{ font-size:17px; }
+    .brand .sub{ font-size:11px; }
+  }
+
+  /* ---------- banner grande ---------- */
+  .hero{
+    position:relative; overflow:hidden;
+    background:
+      radial-gradient(700px 400px at 85% 0%, rgba(227,167,46,0.18), transparent 60%),
+      linear-gradient(180deg, #202429, #141619);
+    padding:38px 20px 34px;
+    display:flex; align-items:center; justify-content:space-between; gap:20px;
+  }
+  .hero-inner{ max-width:640px; position:relative; z-index:1; }
+  .hero-badge{
+    display:inline-block; background:rgba(227,167,46,.14); color:var(--amber);
+    font-size:12px; font-weight:700; letter-spacing:.03em; text-transform:uppercase;
+    padding:5px 12px; border-radius:100px; margin-bottom:12px;
+  }
+  .hero h2{ font-size:28px; color:#fff; line-height:1.2; margin-bottom:10px; }
+  .hero p{ color:#c7cdd2; font-size:14.5px; line-height:1.5; margin-bottom:18px; max-width:440px; }
+  .btn-lg{ padding:13px 22px; font-size:14.5px; text-decoration:none; }
+  .hero-bici{ width:180px; height:auto; opacity:.45; flex-shrink:0; display:none; }
+  @media (min-width:640px){ .hero-bici{ display:block; } }
+  @media (max-width:640px){
+    .hero{ padding:22px 16px 24px; }
+    .hero-badge{ margin-bottom:8px; font-size:11px; }
+    .hero h2{ font-size:21px; margin-bottom:8px; }
+    .hero p{ font-size:13.5px; margin-bottom:14px; }
+    .btn-lg{ padding:11px 18px; font-size:14px; }
+  }
+
+  main{ max-width:1180px; margin:0 auto; padding:18px 16px 40px; }
+
+  .intro{ margin-bottom:18px; }
+  .intro h2{ font-size:22px; }
+  .intro p{ color:var(--ink-soft); font-size:14.5px; margin-top:4px; }
+
+  .search-row{
+    display:flex; align-items:center; gap:8px;
+    background:var(--paper-2); border:2px solid var(--line); border-radius:12px;
+    padding:11px 14px; margin-bottom:18px;
+  }
+  .search-row svg{ width:18px; height:18px; color:var(--ink-soft); flex-shrink:0; }
+  .search-row input{ border:none; outline:none; background:transparent; font-size:16px; width:100%; color:var(--ink); }
+
+  .cat-chips{
+    display:flex; gap:8px; overflow-x:auto; padding:2px 2px 4px; margin-bottom:16px;
+    -ms-overflow-style:none; scrollbar-width:none; -webkit-overflow-scrolling:touch;
+  }
+  .cat-chips::-webkit-scrollbar{ display:none; }
+  .cat-chips button{
+    flex:0 0 auto; background:var(--paper-2); border:1px solid var(--line); color:var(--ink-soft);
+    padding:8px 16px; font-size:13px; font-weight:600; min-height:36px; border-radius:100px; white-space:nowrap;
+  }
+  .cat-chips button.active{ color:#211a08; background:var(--amber); border-color:var(--amber); }
+  .cat-count{
+    display:inline-block; margin-left:5px; font-size:11px; font-weight:700;
+    background:rgba(255,255,255,.08); color:var(--ink-soft); border-radius:100px; padding:1px 7px;
+  }
+  .cat-chips button.active .cat-count{ background:rgba(33,26,8,.18); color:#211a08; }
+
+  /* ---------- panel admin: menú lateral de tipos ---------- */
+  .admin-layout{ display:flex; flex-direction:column; min-width:0; }
+  .admin-sidebar-title{ display:none; }
+  .admin-contenido{ min-width:0; }
+  @media (min-width:860px){
+    .admin-layout{ flex-direction:row; align-items:flex-start; gap:22px; }
+    .admin-sidebar{
+      flex:0 0 200px;
+      position:sticky; top:14px;
+      background:var(--paper-2); border:1px solid var(--line); border-radius:var(--radius);
+      padding:14px;
+    }
+    .admin-sidebar-title{
+      display:block; font-family:'Oswald'; font-size:11.5px; text-transform:uppercase;
+      letter-spacing:.05em; color:var(--ink-soft); margin-bottom:10px; padding:0 4px;
+    }
+    .admin-sidebar .cat-chips{
+      flex-direction:column; overflow:visible; margin-bottom:0; gap:5px;
+      max-height:calc(100vh - 120px); overflow-y:auto;
+    }
+    .admin-sidebar .cat-chips button{
+      width:100%; text-align:left; border-radius:8px; padding:9px 12px; font-size:13.5px;
+    }
+    .admin-contenido{ flex:1 1 auto; }
+  }
+
+  /* ---------- grid de bicicletas ---------- */
+  .grid-bicis{ display:grid; grid-template-columns:1fr; gap:16px; }
+  @media (min-width:640px){ .grid-bicis{ grid-template-columns:repeat(2,1fr); } }
+  @media (min-width:920px){ .grid-bicis{ grid-template-columns:repeat(3,1fr); } }
+
+  .bici-card{
+    background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+    overflow:hidden; box-shadow:var(--shadow); display:flex; flex-direction:column;
+  }
+  .bici-foto{
+    width:100%; aspect-ratio:4/3; background:var(--paper-2);
+    display:flex; align-items:center; justify-content:center; overflow:hidden;
+    position:relative;
+  }
+  .bici-foto img{ width:100%; height:100%; object-fit:cover; }
+  .bici-foto .sin-foto{ color:var(--ink-soft); font-size:13px; text-align:center; padding:20px; }
+  .bici-vendida-tag{
+    position:absolute; top:10px; left:10px;
+    background:var(--red); color:#fff; font-size:11.5px; font-weight:700;
+    padding:5px 10px; border-radius:100px; text-transform:uppercase; letter-spacing:.03em;
+  }
+  .bici-body{ padding:14px 14px 16px; display:flex; flex-direction:column; gap:6px; flex:1; }
+  .bici-cat-badge{
+    align-self:flex-start; background:var(--paper-2); border:1px solid var(--line); color:var(--amber);
+    font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.03em;
+    padding:3px 9px; border-radius:100px; margin-bottom:2px;
+  }
+  .bici-cond-badge{
+    position:absolute; top:10px; left:10px; z-index:1;
+    font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.03em;
+    padding:4px 10px; border-radius:100px; box-shadow:0 2px 8px rgba(0,0,0,.35);
+  }
+  .bici-cond-badge.nueva{ background:var(--green); color:#0d2210; }
+  .bici-cond-badge.usada{ background:var(--amber); color:#211a08; }
+  .condicion-toggle{ display:flex; gap:8px; }
+  .condicion-toggle button{
+    flex:1; background:var(--paper-2); border:2px solid var(--line); color:var(--ink-soft);
+    padding:11px; font-size:14px; font-weight:700; border-radius:10px;
+  }
+  .condicion-toggle button.active{ color:#211a08; background:var(--amber); border-color:var(--amber); }
+  .bici-titulo{ font-family:'Oswald'; font-weight:600; font-size:16.5px; line-height:1.25; }
+  .bici-precio{ color:var(--amber-dark); font-weight:700; font-size:18px; }
+  .bici-desc{ color:var(--ink-soft); font-size:13.5px; line-height:1.4; flex:1;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .bici-actions{ display:flex; gap:8px; margin-top:8px; }
+  .btn{ border-radius:10px; border:2px solid transparent; padding:10px 14px; font-weight:700; font-size:14px;
+    display:inline-flex; align-items:center; justify-content:center; gap:6px; min-height:44px; }
+  .btn-primary{ background:var(--amber); color:#211a08; }
+  .btn-primary:disabled{ background:var(--line); color:var(--ink-soft); cursor:not-allowed; }
+  .btn-ghost{ background:var(--paper-2); border-color:var(--line); color:var(--ink); }
+  .btn-danger{ background:var(--paper-2); border-color:var(--red); color:var(--red); }
+  .btn-sm{ padding:7px 11px; font-size:12.5px; border-radius:8px; min-height:38px; }
+  .btn-block{ width:100%; justify-content:center; }
+  .btn-uppercase{ text-transform:uppercase; letter-spacing:.03em; font-size:12.5px; padding:11px 14px; }
+  .bici-actions .btn{ flex:1; }
+
+  .empty{ text-align:center; padding:60px 20px; color:var(--ink-soft); }
+
+  /* ---------- sección "nuestro taller" ---------- */
+  .taller-section{ margin-top:40px; padding-top:28px; border-top:1px solid var(--line); }
+  .taller-section h2{ font-size:21px; }
+  .taller-sub{ color:var(--ink-soft); font-size:14px; margin-top:4px; margin-bottom:16px; }
+  .taller-carrusel{
+    display:flex; gap:12px; overflow-x:auto; padding-bottom:6px;
+    -webkit-overflow-scrolling:touch; scroll-snap-type:x proximity;
+  }
+  .taller-carrusel img{
+    width:240px; height:180px; object-fit:cover; border-radius:14px; flex:0 0 auto;
+    scroll-snap-align:start; box-shadow:var(--shadow);
+  }
+  .admin-taller-box{
+    background:var(--paper-2); border:1px solid var(--line); border-radius:12px;
+    padding:16px; margin-top:22px;
+  }
+  .admin-taller-box h3{ font-size:15.5px; margin-bottom:2px; }
+  .empty svg{ width:60px; height:60px; opacity:.5; margin-bottom:10px; }
+
+  /* ---------- carrito flotante ---------- */
+  .btn-carrito-header{
+    background:rgba(255,255,255,.08); color:#EFE7D6; border:1px solid rgba(255,255,255,.18);
+    border-radius:9px; padding:8px 12px; display:flex; align-items:center; gap:7px; flex-shrink:0;
+  }
+  .btn-carrito-header svg{ width:17px; height:17px; }
+  .btn-carrito-header .cont{
+    background:var(--amber); color:#211a08; border-radius:100px;
+    min-width:19px; height:19px; padding:0 5px; display:flex; align-items:center; justify-content:center;
+    font-size:11.5px; font-weight:800;
+  }
+  .btn-carrito-header[hidden]{ display:none; }
+
+  /* ---------- modal genérico ---------- */
+  .modal-backdrop{
+    position:fixed; inset:0; background:rgba(38,32,25,.6);
+    display:none; align-items:flex-end; justify-content:center; z-index:100;
+  }
+  .modal-backdrop.open{ display:flex; }
+  .modal{
+    background:var(--paper); width:100%; max-width:600px;
+    border-radius:20px 20px 0 0; max-height:92vh; overflow-y:auto;
+    padding:20px 20px calc(20px + env(safe-area-inset-bottom));
+  }
+  @media (min-width:700px){
+    .modal-backdrop{ align-items:center; }
+    .modal{ border-radius:18px; max-height:88vh; }
+  }
+  .modal-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; gap:10px; }
+  .modal-head h2{ font-size:19px; }
+  .modal-close{ background:none; border:none; font-size:22px; color:var(--ink-soft); padding:4px 8px; flex-shrink:0; }
+  .modal-footer{ display:flex; gap:10px; margin-top:18px; }
+  .modal-footer .btn{ flex:1; }
+
+  /* detalle de bici */
+  .detalle-fotos{ display:flex; gap:8px; overflow-x:auto; margin-bottom:14px; border-radius:12px; }
+  .detalle-fotos img{ width:220px; height:170px; object-fit:cover; border-radius:12px; flex:0 0 auto; }
+  .detalle-precio{ color:var(--amber-dark); font-weight:800; font-size:22px; margin:6px 0; }
+  .detalle-desc{ color:var(--ink-soft); font-size:14.5px; line-height:1.55; white-space:pre-wrap; }
+
+  /* carrito */
+  .carrito-item{ display:flex; gap:12px; align-items:center; padding:10px 0; border-bottom:1px solid var(--line); }
+  .carrito-item img{ width:56px; height:56px; object-fit:cover; border-radius:9px; background:var(--paper-2); flex-shrink:0; }
+  .carrito-item .info{ flex:1; min-width:0; }
+  .carrito-item .info .t{ font-weight:600; font-size:14px; }
+  .carrito-item .info .p{ color:var(--amber-dark); font-weight:700; font-size:13.5px; }
+  .carrito-item button{ background:none; border:none; color:var(--red); font-size:20px; padding:4px 8px; flex-shrink:0; }
+  .carrito-total{ display:flex; justify-content:space-between; font-weight:700; font-size:16px; padding-top:12px; }
+  .carrito-vacio{ text-align:center; color:var(--ink-soft); padding:30px 10px; font-size:14px; }
+
+  /* ---------- formularios (PIN / admin) ---------- */
+  .field{ margin-bottom:14px; }
+  .field label{ display:block; font-weight:700; font-size:13.5px; margin-bottom:6px; }
+  .field input, .field textarea{
+    width:100%; padding:12px 14px; border-radius:10px; border:2px solid var(--line);
+    font-size:16px; background:var(--paper-2); color:var(--ink); font-family:inherit;
+  }
+  .field-hint{ font-size:12px; color:var(--ink-soft); margin-top:4px; }
+  .msg{ border-radius:10px; padding:11px 14px; font-size:13.5px; margin-bottom:14px; font-weight:600; }
+  .msg-error{ background:var(--red-bg); color:var(--red); }
+  .msg-ok{ background:var(--green-bg); color:var(--green); }
+
+  .fotos-admin-grid{ display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+  .foto-admin-item{ position:relative; width:78px; height:78px; border-radius:9px; overflow:hidden; background:var(--paper-2); }
+  .foto-admin-item img{ width:100%; height:100%; object-fit:cover; }
+  .foto-admin-item button{
+    position:absolute; top:2px; right:2px; background:rgba(38,32,25,.75); color:#fff;
+    border:none; border-radius:100px; width:20px; height:20px; font-size:13px; line-height:1;
+  }
+  .foto-admin-add{
+    width:78px; height:78px; border-radius:9px; border:2px dashed var(--line);
+    display:flex; align-items:center; justify-content:center; color:var(--ink-soft); font-size:26px;
+    background:var(--paper-2);
+  }
+
+  /* ---------- panel admin ---------- */
+  .admin-bar{
+    background:var(--paper-2); border:1px solid var(--line); border-radius:12px;
+    padding:12px 14px; margin-bottom:16px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+  }
+  .admin-bar strong{ font-size:13.5px; }
+  .admin-bar .btn{ margin-left:auto; }
+  .subtabs{ display:flex; gap:8px; margin-bottom:18px; }
+  .subtabs button{
+    flex:1; background:var(--paper-2); border:1px solid var(--line); color:var(--ink-soft);
+    font-size:13.5px; font-weight:700; min-height:42px; border-radius:10px;
+  }
+  .subtabs button.active{ color:#211a08; background:var(--amber); border-color:var(--amber); }
+  .admin-lista-item{
+    background:var(--card); border:1px solid var(--line); border-radius:12px; padding:10px; margin-bottom:10px;
+    display:flex; gap:10px; align-items:center;
+  }
+  .admin-lista-item img{ width:56px; height:56px; object-fit:cover; border-radius:8px; background:var(--paper-2); flex-shrink:0; }
+  .admin-lista-item .info{ flex:1; min-width:0; }
+  .admin-lista-item .info .t{ font-weight:600; font-size:14px; }
+  .admin-lista-item .info .p{ font-size:12.5px; color:var(--ink-soft); }
+  .admin-lista-item .estado{ font-size:11px; font-weight:700; padding:3px 8px; border-radius:100px; }
+  .estado.disp{ background:var(--green-bg); color:var(--green); }
+  .estado.no-disp{ background:var(--red-bg); color:var(--red); }
+  .estado.sin-fotos{ background:rgba(227,167,46,.14); color:var(--amber); }
+  .estado.no-pub{ background:var(--paper-2); color:var(--ink-soft); border:1px solid var(--line); }
+
+  .ficha-origen{
+    background:var(--paper-2); border:1px solid var(--line); border-radius:10px;
+    padding:12px 14px; margin-bottom:16px; font-size:13.5px;
+  }
+  .ficha-origen .fo-titulo{ font-weight:700; font-size:15px; margin-bottom:2px; }
+  .ficha-origen .fo-meta{ color:var(--ink-soft); }
+  .ficha-origen .fo-precio{ color:var(--amber); font-weight:700; margin-top:4px; }
+
+  .columnas-checkboxes label{
+    display:flex; align-items:center; gap:8px; padding:8px 0; font-size:14px; font-weight:500;
+    border-bottom:1px solid var(--line);
+  }
+  .columnas-checkboxes label:last-child{ border-bottom:none; }
+  .columnas-checkboxes input{ width:auto; }
+  .columnas-checkboxes .valor{ color:var(--ink-soft); font-weight:400; margin-left:auto; font-size:13px; }
+  .admin-lista-item .btns{ display:flex; gap:6px; flex-shrink:0; flex-wrap:wrap; }
+
+  .loading-row{ display:flex; align-items:center; gap:10px; color:var(--ink-soft); padding:30px; justify-content:center; }
+  .spinner{ width:20px; height:20px; border-radius:50%; border:3px solid var(--line); border-top-color:var(--amber-dark); animation:spin .8s linear infinite; }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+  .visually-hidden{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); }
+</style>
+</head>
+<body>
+
+<div class="anuncio-bar">Consultas y envíos por WhatsApp · Taller y venta de repuestos</div>
+<header class="top">
+  <div class="top-row">
+    <div class="brand">
+      <img src="logo-el-coya-header.png" alt="El Coya" class="brand-logo">
+      <div>
+        <h1>El Coya</h1>
+        <div class="sub">Bicicletería y taller</div>
+      </div>
+    </div>
+    <div class="search-row header-search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <input type="search" id="buscadorPublico" placeholder="Buscar producto..." oninput="renderCatalogo()">
+    </div>
+    <button type="button" class="btn-carrito-header" id="fabCarrito" hidden onclick="abrirCarrito()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+      <span class="cont" id="contCarrito">0</span>
+    </button>
+    <button type="button" class="btn-admin-toggle" id="btnAdminToggle">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21a8 8 0 10-16 0"/><circle cx="12" cy="7" r="4"/></svg>
+      <span id="btnAdminToggleTexto">Iniciar sesión</span>
+    </button>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-badge">Taller propio · Repuestos y bicicletas</div>
+    <h2>Todo para tu bici,<br>en un solo lugar</h2>
+    <p>Repuestos, accesorios y bicicletas en stock. Elegí lo que te interesa y consultá directo por WhatsApp.</p>
+    <a href="#catalogo" class="btn btn-primary btn-lg">Ver catálogo ↓</a>
+  </div>
+  <img src="logo-el-coya-watermark.png" alt="" class="hero-bici" aria-hidden="true">
+</section>
+
+<main>
+  <!-- ============ VISTA PÚBLICA ============ -->
+  <div id="vistaPublica">
+    <div class="intro" id="catalogo-anchor">
+      <h2>Productos disponibles</h2>
+      <p>Elegí los que te interesen y consultá directo por WhatsApp.</p>
+    </div>
+    <div class="cat-chips" id="catChips"></div>
+    <div id="catalogo"></div>
+
+    <section class="taller-section" id="tallerSection" hidden>
+      <h2>Nuestro taller</h2>
+      <p class="taller-sub">Así trabajamos — reparaciones, mantenimiento y puesta a punto.</p>
+      <div class="taller-carrusel" id="tallerCarrusel"></div>
+    </section>
+  </div>
+
+  <!-- ============ VISTA ADMIN ============ -->
+  <div id="vistaAdmin" hidden>
+    <div class="admin-bar">
+      <strong>Modo administrador</strong>
+      <button type="button" class="btn btn-ghost btn-sm" id="btnSalirAdmin">Salir</button>
+    </div>
+
+    <div class="subtabs" id="adminSubtabs">
+      <button type="button" data-panel="productos" class="active">Productos</button>
+      <button type="button" data-panel="bicicletas">Bicicletas</button>
+    </div>
+
+    <div id="panelAdminProductos">
+      <p class="field-hint" style="margin-bottom:12px;">Estos son todos los productos que están cargados en El Coya. Publicá los que quieras vender acá agregándoles fotos — el precio y los datos siempre se traen en vivo desde El Coya.</p>
+
+      <div class="admin-layout">
+        <div class="admin-sidebar">
+          <div class="admin-sidebar-title">Tipos</div>
+          <div class="cat-chips" id="catChipsAdmin"></div>
+        </div>
+        <div class="admin-contenido">
+          <div class="search-row" style="margin-bottom:14px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+            <input type="search" id="buscadorAdmin" placeholder="Buscar producto..." oninput="renderListaAdmin()">
+          </div>
+          <div id="msgAdminLista"></div>
+          <div id="listaAdmin"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="panelAdminBicicletas" hidden>
+      <p class="field-hint" style="margin-bottom:12px;">Las bicicletas se cargan acá directo (no vienen del inventario de El Coya).</p>
+      <button type="button" class="btn btn-primary btn-block" id="btnNuevaBicicleta" style="margin-bottom:16px;">
+        ＋ Agregar bicicleta
+      </button>
+      <div class="search-row" style="margin-bottom:14px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input type="search" id="buscadorBicis" placeholder="Buscar bicicleta..." oninput="renderListaBicisAdmin()">
+      </div>
+      <div id="msgAdminBicis"></div>
+      <div id="listaBicisAdmin"></div>
+    </div>
+
+    <div class="admin-taller-box">
+      <h3>Fotos del taller</h3>
+      <p class="field-hint">Se muestran en el carrusel "Nuestro taller" al final de la página.</p>
+      <div class="fotos-admin-grid" id="tallerAdminGrid">
+        <label class="foto-admin-add" id="btnAgregarFotoTaller">
+          ＋
+          <input type="file" accept="image/*" multiple class="visually-hidden" id="inputFotosTaller">
+        </label>
+      </div>
+      <div class="field-hint" id="tallerSubiendoTexto"></div>
+    </div>
+  </div>
+</main>
+
+<!-- ============ MODAL: detalle de bici ============ -->
+<div class="modal-backdrop" id="modalDetalle">
+  <div class="modal">
+    <div class="modal-head">
+      <h2 id="detalleTitulo">Producto</h2>
+      <button class="modal-close" onclick="cerrarModal('modalDetalle')" aria-label="Cerrar">✕</button>
+    </div>
+    <div id="detalleFotos" class="detalle-fotos"></div>
+    <div class="detalle-precio" id="detallePrecio"></div>
+    <div class="detalle-desc" id="detalleDesc"></div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-primary" id="btnDetalleAgregar">Agregar al carrito</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: carrito ============ -->
+<div class="modal-backdrop" id="modalCarrito">
+  <div class="modal">
+    <div class="modal-head">
+      <h2>Tu carrito</h2>
+      <button class="modal-close" onclick="cerrarModal('modalCarrito')" aria-label="Cerrar">✕</button>
+    </div>
+    <div id="carritoContenido"></div>
+    <div class="field" id="campoNombreCompradorWrap" style="margin-top:16px;">
+      <label for="inputNombreComprador">Tu nombre y apellido</label>
+      <input type="text" id="inputNombreComprador" placeholder="Ej: Juan Pérez" autocomplete="name">
+      <div class="field-hint">Así tu papá sabe quién consulta, aunque no lo tenga agendado.</div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-primary btn-block" id="btnConsultarWhatsapp">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.5 14.4c-.3-.1-1.6-.8-1.9-.9-.2-.1-.4-.1-.6.1-.2.3-.7.9-.8 1-.2.2-.3.2-.5.1-.3-.1-1.1-.4-2.1-1.3-.8-.7-1.3-1.6-1.5-1.8-.1-.2 0-.4.1-.5.1-.1.3-.3.4-.5.1-.1.2-.3.2-.4.1-.2 0-.3 0-.5-.1-.1-.6-1.5-.8-2-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.2.3-.9.9-.9 2.2s.9 2.5 1.1 2.7c.1.2 1.9 2.9 4.6 4 .6.3 1.1.4 1.5.6.6.2 1.2.2 1.6.1.5-.1 1.6-.6 1.8-1.3.2-.6.2-1.1.2-1.3-.1-.1-.3-.2-.6-.3z"/><path d="M12 2a10 10 0 00-8.5 15.2L2 22l4.9-1.5A10 10 0 1012 2zm0 18a8 8 0 01-4.1-1.1l-.3-.2-3 .9.9-2.9-.2-.3A8 8 0 1112 20z"/></svg>
+        Consultar por WhatsApp
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: PIN admin ============ -->
+<div class="modal-backdrop" id="modalPin">
+  <div class="modal" style="max-width:400px;">
+    <div class="modal-head">
+      <h2>Modo administrador</h2>
+      <button class="modal-close" onclick="cerrarModal('modalPin')" aria-label="Cerrar">✕</button>
+    </div>
+    <div id="msgPin"></div>
+    <form id="formPin">
+      <div class="field">
+        <label for="inputPinBicis">Código de acceso</label>
+        <input type="password" inputmode="numeric" id="inputPinBicis" placeholder="••••" autocomplete="off">
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-primary btn-block">Entrar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============ MODAL: publicar/editar producto en la tienda ============ -->
+<div class="modal-backdrop" id="modalForm">
+  <div class="modal">
+    <div class="modal-head">
+      <h2 id="formTitulo">Publicar producto</h2>
+      <button class="modal-close" onclick="cerrarModal('modalForm')" aria-label="Cerrar">✕</button>
+    </div>
+    <div id="msgForm"></div>
+    <div class="ficha-origen" id="fichaOrigen"></div>
+    <form id="formBici">
+      <div class="field">
+        <label>Fotos</label>
+        <div class="fotos-admin-grid" id="fotosAdminGrid">
+          <label class="foto-admin-add" id="btnAgregarFoto">
+            ＋
+            <input type="file" accept="image/*" multiple class="visually-hidden" id="inputFotos">
+          </label>
+        </div>
+        <div class="field-hint" id="fotosSubiendoTexto"></div>
+      </div>
+      <div class="field">
+        <label for="campoDescripcion">Bajada para la tienda (opcional)</label>
+        <textarea id="campoDescripcion" rows="3" placeholder="Un par de líneas extra para mostrar en la tienda (opcional)"></textarea>
+      </div>
+      <div class="field" id="campoColumnasWrap">
+        <label>¿Qué columnas mostrar en la tienda?</label>
+        <div class="field-hint" style="margin-bottom:8px;">Elegí cuáles de los datos del producto se muestran públicamente.</div>
+        <div id="columnasCheckboxes"></div>
+      </div>
+      <div class="field" style="display:flex; align-items:center; gap:10px;">
+        <input type="checkbox" id="campoDisponible" style="width:auto;" checked>
+        <label for="campoDisponible" style="margin:0;">Visible en el catálogo público</label>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" onclick="cerrarModal('modalForm')">Cancelar</button>
+        <button type="submit" class="btn btn-primary" id="btnGuardarBici">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============ MODAL: agregar/editar bicicleta ============ -->
+<div class="modal-backdrop" id="modalFormBici">
+  <div class="modal">
+    <div class="modal-head">
+      <h2 id="formBiciTitulo">Nueva bicicleta</h2>
+      <button class="modal-close" onclick="cerrarModal('modalFormBici')" aria-label="Cerrar">✕</button>
+    </div>
+    <div id="msgFormBici"></div>
+    <form id="formBicicleta">
+      <div class="field">
+        <label for="campoBiciTitulo">Título</label>
+        <input type="text" id="campoBiciTitulo" placeholder="Ej: Mountain Bike Rodado 29">
+      </div>
+      <div class="field">
+        <label>Condición</label>
+        <div class="condicion-toggle" id="condicionToggle">
+          <button type="button" data-condicion="nueva" class="active">Nueva</button>
+          <button type="button" data-condicion="usada">Usada</button>
+        </div>
+      </div>
+      <div class="field">
+        <label for="campoBiciMarca">Marca (opcional)</label>
+        <input type="text" id="campoBiciMarca" placeholder="Ej: Trek, Specialized...">
+      </div>
+      <div class="field">
+        <label for="campoBiciPrecio">Precio</label>
+        <input type="number" id="campoBiciPrecio" placeholder="0">
+      </div>
+      <div class="field">
+        <label for="campoBiciDescripcion">Descripción</label>
+        <textarea id="campoBiciDescripcion" rows="4" placeholder="Rodado, cambios, estado, detalles..."></textarea>
+      </div>
+      <div class="field">
+        <label>Fotos</label>
+        <div class="fotos-admin-grid" id="fotosAdminGridBici">
+          <label class="foto-admin-add" id="btnAgregarFotoBici">
+            ＋
+            <input type="file" accept="image/*" multiple class="visually-hidden" id="inputFotosBici">
+          </label>
+        </div>
+        <div class="field-hint" id="fotosSubiendoTextoBici"></div>
+      </div>
+      <div class="field">
+        <label for="campoBiciNotas">Notas internas (no se muestran públicamente)</label>
+        <textarea id="campoBiciNotas" rows="2" placeholder="Ej: la trajo un cliente en consignación"></textarea>
+      </div>
+      <div class="field" style="display:flex; align-items:center; gap:10px;">
+        <input type="checkbox" id="campoBiciDisponible" style="width:auto;" checked>
+        <label for="campoBiciDisponible" style="margin:0;">Visible en el catálogo público</label>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" onclick="cerrarModal('modalFormBici')">Cancelar</button>
+        <button type="submit" class="btn btn-primary" id="btnGuardarBicicleta">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   CONFIG
+   ========================================================= */
+const SUPABASE_URL = "https://dgjlaftklsxxveklxidx.supabase.co";
+const SUPABASE_KEY = "sb_publishable_qXMU_CHlu0DT5-JLxU70Ew_trYsJEKI";
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const WHATSAPP_NUMERO = "5492302548364";
+const CLAVE_ADMIN_OK = "stock_venta_admin_ok";
+const CLAVE_CARRITO = "stock_venta_carrito";
+const CLAVE_NOMBRE_COMPRADOR = "stock_venta_nombre_comprador";
+
+const $ = (sel) => document.querySelector(sel);
+const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+const esc = (s) => (s ?? "").toString().replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const normalizar = (s) => (s || "").toString().trim().toLowerCase();
+const fmtMoney = (n) => {
+  const v = Number(n);
+  if (isNaN(v) || v === 0) return "Consultar precio";
+  return "$" + v.toLocaleString("es-AR", { maximumFractionDigits: 0 });
+};
+
+const CAMPO_VENTA = "Precio de venta";
+const CAMPO_COSTO = "Precio de costo";
+
+const state = {
+  itemsCategorias: [],
+  itemsFilas: [],       // productos reales de El Coya (pedido:false)
+  publicaciones: {},    // item_id -> fila de elcoya_stock_venta
+  bicicletas: [],        // elcoya_stock_bicicletas (se cargan directo acá)
+  carrito: [],
+  cargando: true,
+  esAdmin: false,
+  panelAdmin: "productos", // "productos" | "bicicletas"
+  categoriaActiva: "",      // filtro público, "" = todas
+  categoriaActivaAdmin: "", // filtro en el panel de administrador (productos)
+  tallerFotos: [],
+  fotosFormTemp: [],     // urls durante la publicación/edición de un producto
+  fotosFormBiciTemp: [], // urls durante el alta/edición de una bicicleta
+  condicionFormBici: "nueva",
+  columnasFormTemp: [],  // columnas elegidas para mostrar en la publicación actual
+  editandoItemId: null,
+  editandoBiciId: null,
+};
+
+try {
+  state.carrito = JSON.parse(localStorage.getItem(CLAVE_CARRITO) || "[]");
+} catch (e) {
+  state.carrito = [];
+}
+
+/* =========================================================
+   CARGA DE DATOS (categorías + productos reales de El Coya + publicaciones + bicicletas)
+   ========================================================= */
+async function cargarBicis() {
+  state.cargando = true;
+  renderCatalogo();
+  const [catRes, filasRes, pubRes, bicisRes] = await Promise.all([
+    supabaseClient.from("elcoya_items_categorias").select("*"),
+    supabaseClient.from("elcoya_items_filas").select("*").eq("pedido", false),
+    supabaseClient.from("elcoya_stock_venta").select("*"),
+    supabaseClient.from("elcoya_stock_bicicletas").select("*").order("created_at", { ascending: false }),
+  ]);
+  state.cargando = false;
+  if (catRes.error || filasRes.error || pubRes.error || bicisRes.error) {
+    $("#catalogo").innerHTML = `<div class="empty">No se pudo cargar el catálogo. Revisá tu conexión.</div>`;
+    return;
+  }
+  state.itemsCategorias = catRes.data || [];
+  state.itemsFilas = filasRes.data || [];
+  state.publicaciones = {};
+  (pubRes.data || []).forEach((p) => { state.publicaciones[p.item_id] = p; });
+  state.bicicletas = bicisRes.data || [];
+  renderCatalogo();
+  if (state.esAdmin) {
+    renderListaAdmin();
+    renderListaBicisAdmin();
+  }
+  actualizarFabCarrito();
+}
+
+function categoriaDe(id) {
+  return state.itemsCategorias.find((c) => c.id === id) || null;
+}
+function columnasProductoDe(categoria) {
+  return ((categoria && categoria.columnas) || []).filter((c) => c.producto && c.nombre !== CAMPO_VENTA && c.nombre !== CAMPO_COSTO);
+}
+function tituloDeItem(fila, categoria) {
+  const cols = columnasProductoDe(categoria);
+  const valores = fila.valores || {};
+  const partes = cols.map((c) => valores[c.nombre]).filter(Boolean);
+  const nombreCat = categoria ? categoria.nombre : "Producto";
+  return partes.length ? `${nombreCat} · ${partes.join(" · ")}` : nombreCat;
+}
+function precioDeItem(fila) {
+  return Number((fila.valores || {})[CAMPO_VENTA]) || 0;
+}
+function columnasVisiblesDe(pub, categoria) {
+  const disponibles = columnasProductoDe(categoria).map((c) => c.nombre);
+  return ((pub && pub.columnas_visibles) || []).filter((n) => disponibles.includes(n));
+}
+
+/* =========================================================
+   CATÁLOGO UNIFICADO: productos vinculados a El Coya + bicicletas
+   (cada ítem tiene una "clave" compuesta: "p:<id>" o "b:<id>")
+   ========================================================= */
+function itemPorClave(clave) {
+  const tipo = clave.slice(0, 1);
+  const id = clave.slice(2);
+  if (tipo === "b") {
+    const b = state.bicicletas.find((x) => x.id === id);
+    if (!b) return null;
+    return {
+      clave, tipo: "b", titulo: b.titulo, categoriaNombre: "Bicicletas", condicion: b.condicion || "nueva",
+      precio: Number(b.precio) || 0, fotos: b.fotos || [], descripcion: b.descripcion || "", extra: "",
+      disponible: b.disponible !== false,
+    };
+  }
+  const fila = state.itemsFilas.find((f) => f.id === id);
+  const pub = state.publicaciones[id];
+  if (!fila || !pub) return null;
+  const categoria = categoriaDe(fila.categoria_id);
+  const cols = columnasVisiblesDe(pub, categoria);
+  const valores = fila.valores || {};
+  const extra = cols.map((c) => `${c}: ${valores[c] || "—"}`).join(" · ");
+  return {
+    clave, tipo: "p", titulo: tituloDeItem(fila, categoria), categoriaNombre: categoria ? categoria.nombre : "Sin categoría",
+    precio: precioDeItem(fila), fotos: pub.fotos || [], descripcion: pub.descripcion || "", extra,
+    disponible: pub.disponible !== false,
+  };
+}
+
+function bicicletasPublicadas() {
+  return state.bicicletas.filter((b) => b.disponible !== false && (b.fotos || []).length > 0);
+}
+
+function catalogoUnificado() {
+  const clavesBici = bicicletasPublicadas().map((b) => "b:" + b.id);
+  const clavesProd = productosPublicados().map((x) => "p:" + x.fila.id);
+  return [...clavesBici, ...clavesProd].map(itemPorClave).filter(Boolean);
+}
+
+/* =========================================================
+   FOTOS DEL TALLER ("así trabajamos")
+   ========================================================= */
+async function cargarTallerFotos() {
+  const { data, error } = await supabaseClient.from("elcoya_stock_taller_fotos").select("*").order("orden", { ascending: true });
+  if (error) return;
+  state.tallerFotos = data || [];
+  renderTallerCarrusel();
+  if (state.esAdmin) renderTallerAdminGrid();
+}
+
+function renderTallerCarrusel() {
+  const seccion = $("#tallerSection");
+  const cont = $("#tallerCarrusel");
+  if (!state.tallerFotos.length) {
+    seccion.hidden = true;
+    return;
+  }
+  seccion.hidden = false;
+  cont.innerHTML = state.tallerFotos.map((f) => `<img src="${esc(f.url)}" alt="Trabajo en el taller El Coya" loading="lazy">`).join("");
+}
+
+function renderTallerAdminGrid() {
+  const grid = $("#tallerAdminGrid");
+  const fotosHtml = state.tallerFotos
+    .map(
+      (f) => `
+      <div class="foto-admin-item">
+        <img src="${esc(f.url)}" alt="">
+        <button type="button" onclick="borrarFotoTaller('${f.id}')" aria-label="Quitar foto">✕</button>
+      </div>`
+    )
+    .join("");
+  grid.innerHTML =
+    fotosHtml +
+    `<label class="foto-admin-add" id="btnAgregarFotoTaller">＋
+      <input type="file" accept="image/*" multiple class="visually-hidden" id="inputFotosTaller">
+    </label>`;
+  $("#inputFotosTaller").addEventListener("change", subirFotosTaller);
+}
+
+// Achica y comprime cualquier foto ANTES de subirla (menos peso en la base, se sigue viendo bien).
+// Reescala al lado más largo a un máximo de 1400px y la re-codifica como JPG con calidad 0.75.
+// Si algo falla (formato raro, etc.), sube el archivo original como respaldo.
+function comprimirImagen(file, maxLado = 1400, calidad = 0.75) {
+  return new Promise((resolve) => {
+    if (!file.type || !file.type.startsWith("image/")) { resolve(file); return; }
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      let { width, height } = img;
+      if (width > maxLado || height > maxLado) {
+        if (width > height) { height = Math.round(height * (maxLado / width)); width = maxLado; }
+        else { width = Math.round(width * (maxLado / height)); height = maxLado; }
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0, width, height);
+      URL.revokeObjectURL(url);
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) { resolve(file); return; }
+          const nombreJpg = file.name.replace(/\.[^.]+$/, "") + ".jpg";
+          resolve(new File([blob], nombreJpg, { type: "image/jpeg" }));
+        },
+        "image/jpeg",
+        calidad
+      );
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+    img.src = url;
+  });
+}
+
+async function subirFotosTaller(e) {
+  const archivos = Array.from(e.target.files || []);
+  if (!archivos.length) return;
+  $("#tallerSubiendoTexto").textContent = "Comprimiendo y subiendo foto" + (archivos.length > 1 ? "s" : "") + "...";
+  for (const archivoOriginal of archivos) {
+    const archivo = await comprimirImagen(archivoOriginal);
+    const nombreLimpio = archivo.name.replace(/[^a-zA-Z0-9.]/g, "_");
+    const path = `taller/${Date.now()}-${Math.random().toString(36).slice(2, 7)}-${nombreLimpio}`;
+    const { error } = await supabaseClient.storage.from("stock-venta").upload(path, archivo);
+    if (error) {
+      $("#tallerSubiendoTexto").textContent = "";
+      alert("No se pudo subir una foto: " + error.message);
+      continue;
+    }
+    const { data } = supabaseClient.storage.from("stock-venta").getPublicUrl(path);
+    await supabaseClient.from("elcoya_stock_taller_fotos").insert({ url: data.publicUrl, orden: state.tallerFotos.length });
+  }
+  $("#tallerSubiendoTexto").textContent = "";
+  await cargarTallerFotos();
+}
+
+function borrarFotoTaller(id) {
+  if (!confirm("¿Quitar esta foto del taller?")) return;
+  supabaseClient
+    .from("elcoya_stock_taller_fotos")
+    .delete()
+    .eq("id", id)
+    .then(({ error }) => {
+      if (error) { alert("No se pudo borrar: " + error.message); return; }
+      cargarTallerFotos();
+    });
+}
+
+/* =========================================================
+   CATÁLOGO PÚBLICO
+   ========================================================= */
+function productosPublicados() {
+  return state.itemsFilas
+    .map((f) => ({ fila: f, categoria: categoriaDe(f.categoria_id), pub: state.publicaciones[f.id] }))
+    .filter((x) => x.pub && x.pub.disponible !== false && (x.pub.fotos || []).length > 0);
+}
+
+function renderCatalogo() {
+  renderCatChips();
+  const cont = $("#catalogo");
+  if (state.cargando) {
+    cont.innerHTML = `<div class="loading-row"><span class="spinner"></span> Cargando productos...</div>`;
+    return;
+  }
+  const q = normalizar($("#buscadorPublico").value);
+  let items = catalogoUnificado();
+  if (state.categoriaActiva) items = items.filter((x) => normalizar(x.categoriaNombre) === normalizar(state.categoriaActiva));
+  if (q) items = items.filter((x) => normalizar(x.titulo + " " + x.descripcion).includes(q));
+
+  if (!items.length) {
+    cont.innerHTML = `<div class="empty">
+      <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="14" cy="34" r="8" stroke="#9aa1a7" stroke-width="2.5"/><circle cx="34" cy="34" r="8" stroke="#9aa1a7" stroke-width="2.5"/><path d="M14 34L22 17H29L34 34M22 17H17M22 17L27 26H34" stroke="#9aa1a7" stroke-width="2.5"/></svg>
+      <div>${q || state.categoriaActiva ? "No encontramos ningún producto que coincida." : "Por ahora no hay productos cargados. ¡Volvé a mirar pronto!"}</div>
+    </div>`;
+    return;
+  }
+
+  cont.innerHTML = `<div class="grid-bicis">${items.map(productoCardHtml).join("")}</div>`;
+}
+
+function categoriasDisponibles() {
+  const set = new Set();
+  catalogoUnificado().forEach((x) => set.add(x.categoriaNombre));
+  return Array.from(set).sort((a, b) => a.localeCompare(b, "es"));
+}
+
+function renderCatChips() {
+  const cont = $("#catChips");
+  if (!cont) return;
+  const cats = categoriasDisponibles();
+  if (cats.length <= 1) { cont.innerHTML = ""; return; }
+  const botones = [`<button type="button" data-cat="" class="${state.categoriaActiva === "" ? "active" : ""}">Todos</button>`].concat(
+    cats.map((c) => `<button type="button" data-cat="${esc(c)}" class="${normalizar(c) === normalizar(state.categoriaActiva) ? "active" : ""}">${esc(c)}</button>`)
+  );
+  cont.innerHTML = botones.join("");
+}
+$("#catChips").addEventListener("click", (e) => {
+  const btn = e.target.closest("button[data-cat]");
+  if (!btn) return;
+  state.categoriaActiva = btn.dataset.cat;
+  renderCatalogo();
+});
+
+function productoCardHtml(item) {
+  const foto = item.fotos[0];
+  const enCarrito = state.carrito.includes(item.clave);
+  const condHtml = item.tipo === "b" ? `<span class="bici-cond-badge ${item.condicion}">${item.condicion === "usada" ? "Usada" : "Nueva"}</span>` : "";
+  return `
+  <div class="bici-card">
+    <div class="bici-foto" onclick="abrirDetalle('${item.clave}')">
+      ${condHtml}
+      ${foto ? `<img src="${esc(foto)}" alt="${esc(item.titulo)}" loading="lazy">` : `<div class="sin-foto">Sin foto todavía</div>`}
+    </div>
+    <div class="bici-body">
+      <div class="bici-cat-badge">${esc(item.categoriaNombre)}</div>
+      <div class="bici-titulo" onclick="abrirDetalle('${item.clave}')" style="cursor:pointer;">${esc(item.titulo)}</div>
+      <div class="bici-precio">${fmtMoney(item.precio)}</div>
+      <div class="bici-desc">${esc(item.descripcion)}</div>
+      <div class="bici-actions">
+        <button class="btn ${enCarrito ? "btn-ghost" : "btn-primary"} btn-block btn-uppercase" onclick="toggleCarrito('${item.clave}', event)">${enCarrito ? "✓ En el carrito" : "Añadir al carrito"}</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* =========================================================
+   DETALLE
+   ========================================================= */
+function abrirDetalle(clave) {
+  const item = itemPorClave(clave);
+  if (!item) return;
+  const condTxt = item.tipo === "b" ? (item.condicion === "usada" ? "Usada" : "Nueva") + " · " : "";
+  $("#detalleTitulo").textContent = condTxt + item.titulo;
+  $("#detallePrecio").textContent = fmtMoney(item.precio);
+  $("#detalleDesc").textContent = [item.descripcion, item.extra].filter(Boolean).join("\n\n") || "Sin descripción.";
+  const fotos = item.fotos;
+  $("#detalleFotos").innerHTML = fotos.length
+    ? fotos.map((f) => `<img src="${esc(f)}" alt="${esc(item.titulo)}">`).join("")
+    : `<div class="field-hint">Todavía no tiene fotos cargadas.</div>`;
+  const btn = $("#btnDetalleAgregar");
+  const enCarrito = state.carrito.includes(clave);
+  btn.textContent = enCarrito ? "✓ Ya está en tu carrito" : "Agregar al carrito";
+  btn.onclick = () => {
+    toggleCarrito(clave);
+    cerrarModal("modalDetalle");
+  };
+  abrirModal("modalDetalle");
+}
+
+/* =========================================================
+   CARRITO
+   ========================================================= */
+function guardarCarrito() {
+  try {
+    localStorage.setItem(CLAVE_CARRITO, JSON.stringify(state.carrito));
+  } catch (e) {}
+}
+function toggleCarrito(id, ev) {
+  if (ev) ev.stopPropagation();
+  const idx = state.carrito.indexOf(id);
+  if (idx === -1) state.carrito.push(id);
+  else state.carrito.splice(idx, 1);
+  guardarCarrito();
+  actualizarFabCarrito();
+  renderCatalogo();
+}
+function actualizarFabCarrito() {
+  const fab = $("#fabCarrito");
+  const n = state.carrito.length;
+  $("#contCarrito").textContent = n;
+  fab.hidden = n === 0 || state.esAdmin;
+}
+function itemsDelCarrito() {
+  return state.carrito.map(itemPorClave).filter(Boolean);
+}
+
+function abrirCarrito() {
+  const items = itemsDelCarrito();
+  const cont = $("#carritoContenido");
+  if (!items.length) {
+    cont.innerHTML = `<div class="carrito-vacio">Todavía no agregaste ningún producto.</div>`;
+    $("#campoNombreCompradorWrap").hidden = true;
+  } else {
+    let total = 0;
+    const filas = items
+      .map((item) => {
+        const foto = item.fotos[0];
+        total += item.precio;
+        return `
+        <div class="carrito-item">
+          ${foto ? `<img src="${esc(foto)}" alt="">` : `<div style="width:56px;height:56px;border-radius:9px;background:var(--paper-2);"></div>`}
+          <div class="info">
+            <div class="t">${esc(item.titulo)}</div>
+            <div class="p">${fmtMoney(item.precio)}</div>
+          </div>
+          <button type="button" onclick="toggleCarrito('${item.clave}'); abrirCarrito();" aria-label="Quitar">✕</button>
+        </div>`;
+      })
+      .join("");
+    cont.innerHTML = filas + `<div class="carrito-total"><span>Total aproximado</span><span>${fmtMoney(total)}</span></div>`;
+    $("#campoNombreCompradorWrap").hidden = false;
+    if (!$("#inputNombreComprador").value) {
+      try { $("#inputNombreComprador").value = localStorage.getItem(CLAVE_NOMBRE_COMPRADOR) || ""; } catch (e) {}
+    }
+  }
+  abrirModal("modalCarrito");
+}
+
+$("#inputNombreComprador").addEventListener("input", () => {
+  $("#inputNombreComprador").style.borderColor = "";
+});
+
+$("#btnConsultarWhatsapp").addEventListener("click", () => {
+  const items = itemsDelCarrito();
+  if (!items.length) return;
+  const nombre = $("#inputNombreComprador").value.trim();
+  if (!nombre) {
+    $("#inputNombreComprador").focus();
+    $("#inputNombreComprador").style.borderColor = "var(--red)";
+    return;
+  }
+  try { localStorage.setItem(CLAVE_NOMBRE_COMPRADOR, nombre); } catch (e) {}
+  let texto = `Hola! Soy ${nombre}. Vi la tienda El Coya y me interesa consultar por:\n\n`;
+  texto += items.map((item) => `• ${item.titulo} (${fmtMoney(item.precio)})`).join("\n");
+  texto += "\n\n¿Siguen disponibles?";
+  const url = `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(texto)}`;
+  window.open(url, "_blank");
+});
+
+/* =========================================================
+   MODAL genérico
+   ========================================================= */
+function abrirModal(id) { $("#" + id).classList.add("open"); }
+function cerrarModal(id) { $("#" + id).classList.remove("open"); }
+
+/* =========================================================
+   ADMIN: acceso con PIN (mismo código que El Coya)
+   ========================================================= */
+async function sha256Hex(texto) {
+  const datos = new TextEncoder().encode(texto);
+  const buffer = await crypto.subtle.digest("SHA-256", datos);
+  return Array.from(new Uint8Array(buffer)).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+function esAdminGuardado() {
+  try {
+    return localStorage.getItem(CLAVE_ADMIN_OK) === "1";
+  } catch (e) {
+    return false;
+  }
+}
+
+$("#btnAdminToggle").addEventListener("click", () => {
+  if (state.esAdmin) {
+    salirAdmin();
+    return;
+  }
+  if (esAdminGuardado()) {
+    entrarAdmin();
+    return;
+  }
+  $("#msgPin").innerHTML = "";
+  $("#inputPinBicis").value = "";
+  abrirModal("modalPin");
+  $("#inputPinBicis").focus();
+});
+
+$("#formPin").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const msg = $("#msgPin");
+  msg.innerHTML = "";
+  const valor = $("#inputPinBicis").value.trim();
+  if (!valor) return;
+  try {
+    const { data, error } = await supabaseClient.from("elcoya_config").select("valor").eq("clave", "codigo_acceso_hash").maybeSingle();
+    if (error || !data) {
+      msg.innerHTML = `<div class="msg msg-error">No se pudo verificar el código. Revisá tu conexión.</div>`;
+      return;
+    }
+    const hashIngresado = await sha256Hex(valor);
+    if (hashIngresado === data.valor) {
+      try { localStorage.setItem(CLAVE_ADMIN_OK, "1"); } catch (e) {}
+      cerrarModal("modalPin");
+      entrarAdmin();
+    } else {
+      msg.innerHTML = `<div class="msg msg-error">Código incorrecto, probá de nuevo.</div>`;
+      $("#inputPinBicis").value = "";
+      $("#inputPinBicis").focus();
+    }
+  } catch (e) {
+    msg.innerHTML = `<div class="msg msg-error">Este navegador no puede verificar el código.</div>`;
+  }
+});
+
+function entrarAdmin() {
+  state.esAdmin = true;
+  $("#vistaPublica").hidden = true;
+  $("#vistaAdmin").hidden = false;
+  actualizarTextoBotonAdmin();
+  actualizarFabCarrito();
+  cargarBicis();
+  renderTallerAdminGrid();
+}
+function salirAdmin() {
+  state.esAdmin = false;
+  $("#vistaPublica").hidden = false;
+  $("#vistaAdmin").hidden = true;
+  actualizarTextoBotonAdmin();
+  actualizarFabCarrito();
+  cargarBicis();
+}
+function actualizarTextoBotonAdmin() {
+  const texto = $("#btnAdminToggleTexto");
+  if (!texto) return;
+  texto.textContent = state.esAdmin ? "Salir" : esAdminGuardado() ? "Panel admin" : "Iniciar sesión";
+}
+$("#btnSalirAdmin").addEventListener("click", salirAdmin);
+
+/* =========================================================
+   ADMIN: listado
+   ========================================================= */
+function categoriasAdminDisponibles() {
+  const conteo = {};
+  state.itemsFilas.forEach((f) => {
+    const c = categoriaDe(f.categoria_id);
+    const nombre = c ? c.nombre : "Sin categoría";
+    conteo[nombre] = (conteo[nombre] || 0) + 1;
+  });
+  return Object.keys(conteo)
+    .sort((a, b) => a.localeCompare(b, "es"))
+    .map((nombre) => ({ nombre, cantidad: conteo[nombre] }));
+}
+
+function renderCatChipsAdmin() {
+  const cont = $("#catChipsAdmin");
+  if (!cont) return;
+  const cats = categoriasAdminDisponibles();
+  if (cats.length <= 1) { cont.innerHTML = ""; return; }
+  const totalTodos = state.itemsFilas.length;
+  const botones = [
+    `<button type="button" data-cat="" class="${state.categoriaActivaAdmin === "" ? "active" : ""}">Todos <span class="cat-count">${totalTodos}</span></button>`,
+  ].concat(
+    cats.map(
+      ({ nombre, cantidad }) =>
+        `<button type="button" data-cat="${esc(nombre)}" class="${normalizar(nombre) === normalizar(state.categoriaActivaAdmin) ? "active" : ""}">${esc(nombre)} <span class="cat-count">${cantidad}</span></button>`
+    )
+  );
+  cont.innerHTML = botones.join("");
+}
+$("#catChipsAdmin").addEventListener("click", (e) => {
+  const btn = e.target.closest("button[data-cat]");
+  if (!btn) return;
+  state.categoriaActivaAdmin = btn.dataset.cat;
+  renderListaAdmin();
+});
+
+function renderListaAdmin() {
+  renderCatChipsAdmin();
+  const cont = $("#listaAdmin");
+  if (!state.itemsFilas.length) {
+    cont.innerHTML = `<div class="empty">Todavía no hay productos cargados en El Coya.</div>`;
+    return;
+  }
+  const q = normalizar($("#buscadorAdmin").value);
+  let items = state.itemsFilas.map((f) => ({ fila: f, categoria: categoriaDe(f.categoria_id), pub: state.publicaciones[f.id] || null }));
+  if (state.categoriaActivaAdmin) items = items.filter((x) => normalizar(x.categoria ? x.categoria.nombre : "Sin categoría") === normalizar(state.categoriaActivaAdmin));
+  if (q) items = items.filter((x) => normalizar(tituloDeItem(x.fila, x.categoria)).includes(q));
+
+  if (!items.length) {
+    cont.innerHTML = `<div class="empty">No se encontró ningún producto para "${esc($("#buscadorAdmin").value)}".</div>`;
+    return;
+  }
+
+  cont.innerHTML = items
+    .map(({ fila, categoria, pub }) => {
+      const foto = pub && (pub.fotos || [])[0];
+      const titulo = tituloDeItem(fila, categoria);
+      const precio = precioDeItem(fila);
+      let estadoClase, estadoTxt;
+      if (!pub) { estadoClase = "no-pub"; estadoTxt = "No publicado"; }
+      else if (!(pub.fotos || []).length) { estadoClase = "sin-fotos"; estadoTxt = "Sin fotos"; }
+      else if (pub.disponible === false) { estadoClase = "no-disp"; estadoTxt = "Oculto"; }
+      else { estadoClase = "disp"; estadoTxt = "Publicado"; }
+      return `
+      <div class="admin-lista-item">
+        ${foto ? `<img src="${esc(foto)}" alt="">` : `<div style="width:56px;height:56px;border-radius:8px;background:var(--paper-2);"></div>`}
+        <div class="info">
+          <div class="t">${esc(titulo)} <span class="estado ${estadoClase}">${estadoTxt}</span></div>
+          <div class="p">${categoria ? esc(categoria.nombre) + " · " : ""}${fmtMoney(precio)}</div>
+        </div>
+        <div class="btns">
+          <button class="btn btn-ghost btn-sm" onclick="abrirFormPublicar('${fila.id}')">${pub ? "Editar" : "Publicar"}</button>
+          ${pub ? `<button class="btn btn-danger btn-sm" onclick="quitarDeLaTienda('${fila.id}')">Quitar</button>` : ""}
+        </div>
+      </div>`;
+    })
+    .join("");
+}
+
+function quitarDeLaTienda(itemId) {
+  if (!confirm('¿Quitar este producto de la tienda?\n\n(el producto sigue existiendo en El Coya, solo deja de mostrarse en esta página)')) return;
+  supabaseClient
+    .from("elcoya_stock_venta")
+    .delete()
+    .eq("item_id", itemId)
+    .then(({ error }) => {
+      if (error) { alert("No se pudo quitar: " + error.message); return; }
+      cargarBicis();
+    });
+}
+
+/* =========================================================
+   ADMIN: subtabs Productos / Bicicletas
+   ========================================================= */
+$("#adminSubtabs").addEventListener("click", (e) => {
+  const btn = e.target.closest("button[data-panel]");
+  if (!btn) return;
+  state.panelAdmin = btn.dataset.panel;
+  $$("#adminSubtabs button").forEach((b) => b.classList.toggle("active", b === btn));
+  $("#panelAdminProductos").hidden = state.panelAdmin !== "productos";
+  $("#panelAdminBicicletas").hidden = state.panelAdmin !== "bicicletas";
+});
+
+/* =========================================================
+   ADMIN: bicicletas (se cargan directo, no vienen de El Coya)
+   ========================================================= */
+function renderListaBicisAdmin() {
+  const cont = $("#listaBicisAdmin");
+  if (!cont) return;
+  if (!state.bicicletas.length) {
+    cont.innerHTML = `<div class="empty">Todavía no cargaste ninguna bicicleta.</div>`;
+    return;
+  }
+  const q = normalizar($("#buscadorBicis").value);
+  let items = state.bicicletas;
+  if (q) items = items.filter((b) => normalizar(b.titulo + " " + (b.marca || "")).includes(q));
+  if (!items.length) {
+    cont.innerHTML = `<div class="empty">No se encontró ninguna bicicleta para "${esc($("#buscadorBicis").value)}".</div>`;
+    return;
+  }
+  cont.innerHTML = items
+    .map((b) => {
+      const foto = (b.fotos || [])[0];
+      const sinFotos = !(b.fotos || []).length;
+      let estadoClase, estadoTxt;
+      if (sinFotos) { estadoClase = "sin-fotos"; estadoTxt = "Sin fotos"; }
+      else if (b.disponible === false) { estadoClase = "no-disp"; estadoTxt = "Oculta"; }
+      else { estadoClase = "disp"; estadoTxt = "Publicada"; }
+      return `
+      <div class="admin-lista-item">
+        ${foto ? `<img src="${esc(foto)}" alt="">` : `<div style="width:56px;height:56px;border-radius:8px;background:var(--paper-2);"></div>`}
+        <div class="info">
+          <div class="t">${esc(b.titulo)} <span class="estado ${estadoClase}">${estadoTxt}</span></div>
+          <div class="p">${b.condicion === "usada" ? "Usada" : "Nueva"} · ${b.marca ? esc(b.marca) + " · " : ""}${fmtMoney(Number(b.precio) || 0)}</div>
+        </div>
+        <div class="btns">
+          <button class="btn btn-ghost btn-sm" onclick="abrirFormBiciEditar('${b.id}')">Editar</button>
+          <button class="btn btn-danger btn-sm" onclick="borrarBicicleta('${b.id}')">Borrar</button>
+        </div>
+      </div>`;
+    })
+    .join("");
+}
+
+$("#btnNuevaBicicleta").addEventListener("click", () => abrirFormBiciNueva());
+
+function abrirFormBiciNueva() {
+  state.editandoBiciId = null;
+  state.fotosFormBiciTemp = [];
+  $("#formBiciTitulo").textContent = "Nueva bicicleta";
+  $("#msgFormBici").innerHTML = "";
+  $("#campoBiciTitulo").value = "";
+  $("#campoBiciMarca").value = "";
+  $("#campoBiciPrecio").value = "";
+  $("#campoBiciDescripcion").value = "";
+  $("#campoBiciNotas").value = "";
+  $("#campoBiciDisponible").checked = true;
+  setCondicionFormBici("nueva");
+  renderFotosAdminGridBici();
+  abrirModal("modalFormBici");
+}
+
+function abrirFormBiciEditar(id) {
+  const b = state.bicicletas.find((x) => x.id === id);
+  if (!b) return;
+  state.editandoBiciId = id;
+  state.fotosFormBiciTemp = [...(b.fotos || [])];
+  $("#formBiciTitulo").textContent = "Editar bicicleta";
+  $("#msgFormBici").innerHTML = "";
+  $("#campoBiciTitulo").value = b.titulo || "";
+  $("#campoBiciMarca").value = b.marca || "";
+  $("#campoBiciPrecio").value = b.precio || "";
+  $("#campoBiciDescripcion").value = b.descripcion || "";
+  $("#campoBiciNotas").value = b.notas_internas || "";
+  $("#campoBiciDisponible").checked = b.disponible !== false;
+  setCondicionFormBici(b.condicion === "usada" ? "usada" : "nueva");
+  renderFotosAdminGridBici();
+  abrirModal("modalFormBici");
+}
+
+function setCondicionFormBici(valor) {
+  state.condicionFormBici = valor;
+  $$("#condicionToggle button").forEach((b) => b.classList.toggle("active", b.dataset.condicion === valor));
+}
+$("#condicionToggle").addEventListener("click", (e) => {
+  const btn = e.target.closest("button[data-condicion]");
+  if (!btn) return;
+  setCondicionFormBici(btn.dataset.condicion);
+});
+
+function renderFotosAdminGridBici() {
+  const grid = $("#fotosAdminGridBici");
+  const fotosHtml = state.fotosFormBiciTemp
+    .map(
+      (url, idx) => `
+      <div class="foto-admin-item">
+        <img src="${esc(url)}" alt="">
+        <button type="button" onclick="quitarFotoFormBici(${idx})" aria-label="Quitar foto">✕</button>
+      </div>`
+    )
+    .join("");
+  grid.innerHTML =
+    fotosHtml +
+    `<label class="foto-admin-add" id="btnAgregarFotoBici">＋
+      <input type="file" accept="image/*" multiple class="visually-hidden" id="inputFotosBici">
+    </label>`;
+  $("#inputFotosBici").addEventListener("change", subirFotosBici);
+}
+function quitarFotoFormBici(idx) {
+  state.fotosFormBiciTemp.splice(idx, 1);
+  renderFotosAdminGridBici();
+}
+
+async function subirFotosBici(e) {
+  const archivos = Array.from(e.target.files || []);
+  if (!archivos.length) return;
+  $("#fotosSubiendoTextoBici").textContent = "Comprimiendo y subiendo foto" + (archivos.length > 1 ? "s" : "") + "...";
+  for (const archivoOriginal of archivos) {
+    const archivo = await comprimirImagen(archivoOriginal);
+    const nombreLimpio = archivo.name.replace(/[^a-zA-Z0-9.]/g, "_");
+    const path = `bicicletas/${Date.now()}-${Math.random().toString(36).slice(2, 7)}-${nombreLimpio}`;
+    const { error } = await supabaseClient.storage.from("stock-venta").upload(path, archivo);
+    if (error) {
+      $("#fotosSubiendoTextoBici").textContent = "";
+      $("#msgFormBici").innerHTML = `<div class="msg msg-error">No se pudo subir una foto: ${esc(error.message)}</div>`;
+      continue;
+    }
+    const { data } = supabaseClient.storage.from("stock-venta").getPublicUrl(path);
+    state.fotosFormBiciTemp.push(data.publicUrl);
+  }
+  $("#fotosSubiendoTextoBici").textContent = "";
+  renderFotosAdminGridBici();
+}
+
+function borrarBicicleta(id) {
+  if (!confirm("¿Borrar esta bicicleta? No se puede deshacer.")) return;
+  supabaseClient
+    .from("elcoya_stock_bicicletas")
+    .delete()
+    .eq("id", id)
+    .then(({ error }) => {
+      if (error) { alert("No se pudo borrar: " + error.message); return; }
+      cargarBicis();
+    });
+}
+
+$("#formBicicleta").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const msg = $("#msgFormBici");
+  msg.innerHTML = "";
+  const titulo = $("#campoBiciTitulo").value.trim();
+  if (!titulo) { msg.innerHTML = `<div class="msg msg-error">Escribí un título para la bicicleta.</div>`; return; }
+
+  const payload = {
+    titulo,
+    marca: $("#campoBiciMarca").value.trim(),
+    condicion: state.condicionFormBici,
+    precio: $("#campoBiciPrecio").value ? Number($("#campoBiciPrecio").value) : null,
+    descripcion: $("#campoBiciDescripcion").value.trim(),
+    notas_internas: $("#campoBiciNotas").value.trim(),
+    disponible: $("#campoBiciDisponible").checked,
+    fotos: state.fotosFormBiciTemp,
+  };
+
+  const query = state.editandoBiciId
+    ? supabaseClient.from("elcoya_stock_bicicletas").update(payload).eq("id", state.editandoBiciId)
+    : supabaseClient.from("elcoya_stock_bicicletas").insert(payload);
+  const { error } = await query;
+  if (error) {
+    msg.innerHTML = `<div class="msg msg-error">No se pudo guardar: ${esc(error.message)}</div>`;
+    return;
+  }
+  cerrarModal("modalFormBici");
+  cargarBicis();
+});
+
+/* =========================================================
+   ADMIN: publicar / editar una publicación + fotos
+   ========================================================= */
+function abrirFormPublicar(itemId) {
+  const fila = state.itemsFilas.find((f) => f.id === itemId);
+  if (!fila) return;
+  const categoria = categoriaDe(fila.categoria_id);
+  const pub = state.publicaciones[itemId];
+
+  state.editandoItemId = itemId;
+  state.fotosFormTemp = pub ? [...(pub.fotos || [])] : [];
+
+  $("#formTitulo").textContent = pub ? "Editar publicación" : "Publicar producto";
+  $("#msgForm").innerHTML = "";
+  $("#campoDescripcion").value = pub ? pub.descripcion || "" : "";
+  $("#campoDisponible").checked = pub ? pub.disponible !== false : true;
+
+  const titulo = tituloDeItem(fila, categoria);
+  const precio = precioDeItem(fila);
+  $("#fichaOrigen").innerHTML = `
+    <div class="fo-titulo">${esc(titulo)}</div>
+    <div class="fo-meta">${categoria ? esc(categoria.nombre) : "Sin tipo"} · el título y el precio se traen en vivo de El Coya</div>
+    <div class="fo-precio">${fmtMoney(precio)}</div>
+  `;
+
+  const colsDisponibles = columnasProductoDe(categoria);
+  const seleccionadasPrevias = pub ? pub.columnas_visibles || [] : colsDisponibles.map((c) => c.nombre);
+  state.columnasFormTemp = seleccionadasPrevias.filter((n) => colsDisponibles.some((c) => c.nombre === n));
+
+  if (!colsDisponibles.length) {
+    $("#campoColumnasWrap").hidden = true;
+  } else {
+    $("#campoColumnasWrap").hidden = false;
+    const valores = fila.valores || {};
+    $("#columnasCheckboxes").innerHTML = colsDisponibles
+      .map((c) => {
+        const val = valores[c.nombre] || "—";
+        const checked = state.columnasFormTemp.includes(c.nombre) ? "checked" : "";
+        return `<label><input type="checkbox" value="${esc(c.nombre)}" ${checked} onchange="toggleColumnaForm('${esc(c.nombre)}', this.checked)"> ${esc(c.nombre)} <span class="valor">${esc(val)}</span></label>`;
+      })
+      .join("");
+  }
+
+  renderFotosAdminGrid();
+  abrirModal("modalForm");
+}
+
+function toggleColumnaForm(nombre, marcado) {
+  if (marcado) {
+    if (!state.columnasFormTemp.includes(nombre)) state.columnasFormTemp.push(nombre);
+  } else {
+    state.columnasFormTemp = state.columnasFormTemp.filter((n) => n !== nombre);
+  }
+}
+
+function renderFotosAdminGrid() {
+  const grid = $("#fotosAdminGrid");
+  const fotosHtml = state.fotosFormTemp
+    .map(
+      (url, idx) => `
+      <div class="foto-admin-item">
+        <img src="${esc(url)}" alt="">
+        <button type="button" onclick="quitarFotoForm(${idx})" aria-label="Quitar foto">✕</button>
+      </div>`
+    )
+    .join("");
+  grid.innerHTML =
+    fotosHtml +
+    `<label class="foto-admin-add" id="btnAgregarFoto">＋
+      <input type="file" accept="image/*" multiple class="visually-hidden" id="inputFotos">
+    </label>`;
+  $("#inputFotos").addEventListener("change", subirFotos);
+}
+function quitarFotoForm(idx) {
+  state.fotosFormTemp.splice(idx, 1);
+  renderFotosAdminGrid();
+}
+
+async function subirFotos(e) {
+  const archivos = Array.from(e.target.files || []);
+  if (!archivos.length) return;
+  $("#fotosSubiendoTexto").textContent = "Comprimiendo y subiendo foto" + (archivos.length > 1 ? "s" : "") + "...";
+  for (const archivoOriginal of archivos) {
+    const archivo = await comprimirImagen(archivoOriginal);
+    const nombreLimpio = archivo.name.replace(/[^a-zA-Z0-9.]/g, "_");
+    const path = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}-${nombreLimpio}`;
+    const { error } = await supabaseClient.storage.from("stock-venta").upload(path, archivo);
+    if (error) {
+      $("#fotosSubiendoTexto").textContent = "";
+      $("#msgForm").innerHTML = `<div class="msg msg-error">No se pudo subir una foto: ${esc(error.message)}</div>`;
+      continue;
+    }
+    const { data } = supabaseClient.storage.from("stock-venta").getPublicUrl(path);
+    state.fotosFormTemp.push(data.publicUrl);
+  }
+  $("#fotosSubiendoTexto").textContent = "";
+  renderFotosAdminGrid();
+}
+
+$("#formBici").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const msg = $("#msgForm");
+  msg.innerHTML = "";
+  const itemId = state.editandoItemId;
+  if (!itemId) return;
+
+  if (!state.fotosFormTemp.length) {
+    msg.innerHTML = `<div class="msg msg-error">Agregá al menos una foto para poder publicarlo.</div>`;
+    return;
+  }
+
+  const payload = {
+    item_id: itemId,
+    descripcion: $("#campoDescripcion").value.trim(),
+    columnas_visibles: state.columnasFormTemp,
+    disponible: $("#campoDisponible").checked,
+    fotos: state.fotosFormTemp,
+  };
+
+  const existePub = !!state.publicaciones[itemId];
+  const query = existePub
+    ? supabaseClient.from("elcoya_stock_venta").update(payload).eq("item_id", itemId)
+    : supabaseClient.from("elcoya_stock_venta").insert(payload);
+  const { error } = await query;
+  if (error) {
+    msg.innerHTML = `<div class="msg msg-error">No se pudo guardar: ${esc(error.message)}</div>`;
+    return;
+  }
+  cerrarModal("modalForm");
+  cargarBicis();
+});
+
+/* =========================================================
+   INIT
+   ========================================================= */
+// si ya entró antes como admin en este dispositivo, el botón dice "Panel admin"
+// (no hace falta pedir el código de nuevo), pero arrancamos igual en la vista
+// pública para no asustar a un visitante casual.
+actualizarTextoBotonAdmin();
+cargarBicis();
+cargarTallerFotos();
+</script>
+</body>
+</html>
