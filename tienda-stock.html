@@ -222,6 +222,55 @@
   }
   .cat-chips button.active .cat-count{ background:rgba(33,26,8,.18); color:#211a08; }
 
+  /* ---------- barra de orden / "mostrando X" ---------- */
+  .catalogo-toolbar{
+    display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
+    margin-bottom:14px;
+  }
+  .catalogo-resultado{ color:var(--ink-soft); font-size:13.5px; }
+  .select-orden-publico{
+    background:var(--paper-2); border:1px solid var(--line); color:var(--ink);
+    padding:9px 12px; border-radius:9px; font-size:13.5px; font-family:inherit; flex-shrink:0;
+  }
+
+  /* ---------- tarjetas: efecto hover en escritorio ---------- */
+  .bici-card{ transition:transform .15s ease, box-shadow .15s ease; }
+  @media (hover:hover) and (pointer:fine){
+    .bici-card:hover{ transform:translateY(-3px); box-shadow:0 16px 34px -14px rgba(0,0,0,.55); }
+  }
+
+  /* ---------- sin stock ---------- */
+  .bici-stock-badge{
+    position:absolute; inset:0; background:rgba(20,22,25,.62);
+    display:flex; align-items:center; justify-content:center; z-index:1;
+  }
+  .bici-stock-badge span{
+    background:#141619; color:#fff; font-size:12.5px; font-weight:800; text-transform:uppercase;
+    letter-spacing:.03em; padding:6px 14px; border-radius:100px; border:1px solid var(--line);
+  }
+
+  /* ---------- tarjetas "esqueleto" mientras carga ---------- */
+  @keyframes skeletonPulse{ 0%,100%{ opacity:.55; } 50%{ opacity:1; } }
+  .skeleton-card{
+    background:var(--card); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden;
+  }
+  .skeleton-block{ background:var(--paper-2); animation:skeletonPulse 1.3s ease-in-out infinite; }
+  .skeleton-foto{ width:100%; aspect-ratio:4/3; }
+  .skeleton-linea{ height:12px; border-radius:6px; margin:14px 14px 0; }
+  .skeleton-linea.corta{ width:55%; }
+  .skeleton-linea.precio{ width:35%; height:16px; margin-top:10px; }
+  .skeleton-linea.boton{ height:38px; border-radius:10px; margin:16px 14px 14px; }
+
+  /* ---------- botón "ver más" ---------- */
+  #catalogoVerMasWrap{ display:flex; justify-content:center; margin-top:8px; }
+
+  /* ---------- puntos indicadores del carrusel de fotos (detalle) ---------- */
+  .detalle-fotos-dots{ display:flex; justify-content:center; gap:6px; margin-top:8px; }
+  .detalle-fotos-dots button{
+    width:8px; height:8px; border-radius:100px; background:var(--line); border:none; padding:0;
+  }
+  .detalle-fotos-dots button.active{ background:var(--amber); width:20px; }
+
   /* ---------- panel admin: menú lateral de tipos ---------- */
   .admin-layout{ display:flex; flex-direction:column; min-width:0; }
   .admin-sidebar-title{ display:none; }
@@ -406,8 +455,8 @@
   .modal-footer .btn{ flex:1; }
 
   /* detalle de bici */
-  .detalle-fotos{ display:flex; gap:8px; overflow-x:auto; margin-bottom:14px; border-radius:12px; }
-  .detalle-fotos img{ width:220px; height:170px; object-fit:cover; border-radius:12px; flex:0 0 auto; }
+  .detalle-fotos{ display:flex; gap:8px; overflow-x:auto; margin-bottom:8px; border-radius:12px; scroll-snap-type:x mandatory; }
+  .detalle-fotos img{ width:220px; height:170px; object-fit:cover; border-radius:12px; flex:0 0 auto; scroll-snap-align:start; }
   .detalle-precio{ color:var(--amber-dark); font-weight:800; font-size:22px; margin:6px 0; }
   .detalle-desc{ color:var(--ink-soft); font-size:14.5px; line-height:1.55; white-space:pre-wrap; }
 
@@ -538,7 +587,7 @@
       </div>
       <div class="search-row header-search">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-        <input type="search" id="buscadorPublico" placeholder="Buscar producto..." oninput="renderCatalogo()">
+        <input type="search" id="buscadorPublico" placeholder="Buscar producto..." oninput="state.catalogoPagina = 1; renderCatalogo();">
       </div>
       <div class="header-icons">
         <button type="button" class="icon-only-btn" id="btnAdminToggle" title="Cuenta">
@@ -596,7 +645,17 @@
       <p>Elegí los que te interesen y consultá directo por WhatsApp.</p>
     </div>
     <div class="cat-chips" id="catChips"></div>
+    <div class="catalogo-toolbar">
+      <div class="catalogo-resultado" id="catalogoResultadoTexto"></div>
+      <select id="ordenPublico" class="select-orden-publico">
+        <option value="relevancia">Más relevantes</option>
+        <option value="precio-asc">Precio: menor a mayor</option>
+        <option value="precio-desc">Precio: mayor a menor</option>
+        <option value="nuevos">Recién llegados</option>
+      </select>
+    </div>
     <div id="catalogo"></div>
+    <div id="catalogoVerMasWrap"></div>
 
     <section class="taller-section" id="tallerSection" hidden>
       <h2>Nuestro taller</h2>
@@ -771,6 +830,7 @@
       <button class="modal-close" onclick="cerrarModal('modalDetalle')" aria-label="Cerrar">✕</button>
     </div>
     <div id="detalleFotos" class="detalle-fotos"></div>
+    <div id="detalleFotosDots" class="detalle-fotos-dots"></div>
     <div class="detalle-precio" id="detallePrecio"></div>
     <div class="detalle-desc" id="detalleDesc"></div>
     <div class="modal-footer">
@@ -994,6 +1054,9 @@ const state = {
   esAdmin: false,
   panelAdmin: "productos", // "productos" | "bicicletas"
   categoriaActiva: "",      // filtro público, "" = todas
+  ordenPublico: "relevancia", // relevancia | precio-asc | precio-desc | nuevos
+  catalogoPagina: 1,
+  catalogoPorPagina: 12,
   categoriaActivaAdmin: "", // filtro en el panel de administrador (productos)
   tallerFotos: [],
   fotosFormTemp: [],     // urls durante la publicación/edición de un producto
@@ -1078,7 +1141,7 @@ function itemPorClave(clave) {
     return {
       clave, tipo: "b", titulo: b.titulo, categoriaNombre: "Bicicletas", condicion: b.condicion || "nueva",
       precio: Number(b.precio) || 0, fotos: b.fotos || [], descripcion: b.descripcion || "", extra: "",
-      disponible: b.disponible !== false,
+      disponible: b.disponible !== false, stock: null, creado: b.created_at,
     };
   }
   const fila = state.itemsFilas.find((f) => f.id === id);
@@ -1091,7 +1154,7 @@ function itemPorClave(clave) {
   return {
     clave, tipo: "p", titulo: tituloDeItem(fila, categoria), categoriaNombre: categoria ? categoria.nombre : "Sin categoría",
     precio: precioDeItem(fila), fotos: pub.fotos || [], descripcion: pub.descripcion || "", extra,
-    disponible: pub.disponible !== false,
+    disponible: pub.disponible !== false, stock: Number(fila.stock) || 0, creado: pub.created_at,
   };
 }
 
@@ -1396,11 +1459,26 @@ function productosPublicados() {
     .filter((x) => x.pub && x.pub.disponible !== false && (x.pub.fotos || []).length > 0);
 }
 
+function tarjetasEsqueleto(cantidad) {
+  const una = `
+    <div class="bici-card skeleton-card">
+      <div class="skeleton-block skeleton-foto"></div>
+      <div class="skeleton-block skeleton-linea"></div>
+      <div class="skeleton-block skeleton-linea corta"></div>
+      <div class="skeleton-block skeleton-linea precio"></div>
+      <div class="skeleton-block skeleton-linea boton"></div>
+    </div>`;
+  return `<div class="grid-bicis">${una.repeat(cantidad)}</div>`;
+}
+
 function renderCatalogo() {
   renderCatChips();
   const cont = $("#catalogo");
+  const verMasWrap = $("#catalogoVerMasWrap");
   if (state.cargando) {
-    cont.innerHTML = `<div class="loading-row"><span class="spinner"></span> Cargando productos...</div>`;
+    cont.innerHTML = tarjetasEsqueleto(6);
+    $("#catalogoResultadoTexto").textContent = "";
+    if (verMasWrap) verMasWrap.innerHTML = "";
     return;
   }
   const q = normalizar($("#buscadorPublico").value);
@@ -1408,16 +1486,62 @@ function renderCatalogo() {
   if (state.categoriaActiva) items = items.filter((x) => normalizar(x.categoriaNombre) === normalizar(state.categoriaActiva));
   if (q) items = items.filter((x) => normalizar(x.titulo + " " + x.descripcion).includes(q));
 
+  switch (state.ordenPublico) {
+    case "precio-asc":
+      items.sort((a, b) => a.precio - b.precio);
+      break;
+    case "precio-desc":
+      items.sort((a, b) => b.precio - a.precio);
+      break;
+    case "nuevos":
+      items.sort((a, b) => new Date(b.creado || 0) - new Date(a.creado || 0));
+      break;
+  }
+
+  const totalTexto = $("#catalogoResultadoTexto");
+  if (totalTexto) {
+    if (!items.length) {
+      totalTexto.textContent = "";
+    } else if (state.categoriaActiva) {
+      totalTexto.textContent = `Mostrando: ${state.categoriaActiva} (${items.length})`;
+    } else if (q) {
+      totalTexto.textContent = `${items.length} resultado${items.length === 1 ? "" : "s"} para "${$("#buscadorPublico").value}"`;
+    } else {
+      totalTexto.textContent = `${items.length} producto${items.length === 1 ? "" : "s"} disponible${items.length === 1 ? "" : "s"}`;
+    }
+  }
+
   if (!items.length) {
     cont.innerHTML = `<div class="empty">
       <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="14" cy="34" r="8" stroke="#9aa1a7" stroke-width="2.5"/><circle cx="34" cy="34" r="8" stroke="#9aa1a7" stroke-width="2.5"/><path d="M14 34L22 17H29L34 34M22 17H17M22 17L27 26H34" stroke="#9aa1a7" stroke-width="2.5"/></svg>
       <div>${q || state.categoriaActiva ? "No encontramos ningún producto que coincida." : "Por ahora no hay productos cargados. ¡Volvé a mirar pronto!"}</div>
     </div>`;
+    if (verMasWrap) verMasWrap.innerHTML = "";
     return;
   }
 
-  cont.innerHTML = `<div class="grid-bicis">${items.map(productoCardHtml).join("")}</div>`;
+  const hastaAhora = state.catalogoPagina * state.catalogoPorPagina;
+  const visibles = items.slice(0, hastaAhora);
+  cont.innerHTML = `<div class="grid-bicis">${visibles.map(productoCardHtml).join("")}</div>`;
+
+  if (verMasWrap) {
+    verMasWrap.innerHTML =
+      items.length > hastaAhora
+        ? `<button type="button" class="btn btn-ghost" id="btnVerMasCatalogo">Ver más (${items.length - hastaAhora} más)</button>`
+        : "";
+  }
 }
+$("#ordenPublico").addEventListener("change", (e) => {
+  state.ordenPublico = e.target.value;
+  state.catalogoPagina = 1;
+  renderCatalogo();
+});
+$("#catalogoVerMasWrap").addEventListener("click", (e) => {
+  if (e.target.id === "btnVerMasCatalogo") {
+    state.catalogoPagina += 1;
+    renderCatalogo();
+  }
+});
 
 function categoriasDisponibles() {
   const set = new Set();
@@ -1439,6 +1563,7 @@ $("#catChips").addEventListener("click", (e) => {
   const btn = e.target.closest("button[data-cat]");
   if (!btn) return;
   state.categoriaActiva = btn.dataset.cat;
+  state.catalogoPagina = 1;
   renderCatalogo();
 });
 
@@ -1446,9 +1571,11 @@ function productoCardHtml(item) {
   const foto = item.fotos[0];
   const enCarrito = state.carrito.includes(item.clave);
   const condHtml = item.tipo === "b" ? `<span class="bici-cond-badge ${item.condicion}">${item.condicion === "usada" ? "Usada" : "Nueva"}</span>` : "";
+  const sinStock = item.tipo === "p" && item.stock <= 0;
   return `
   <div class="bici-card">
     <div class="bici-foto" onclick="abrirDetalle('${item.clave}')">
+      ${sinStock ? `<div class="bici-stock-badge"><span>Sin stock</span></div>` : ""}
       ${condHtml}
       ${foto ? `<img src="${esc(foto)}" alt="${esc(item.titulo)}" loading="lazy">` : `<div class="sin-foto">Sin foto todavía</div>`}
     </div>
@@ -1458,7 +1585,7 @@ function productoCardHtml(item) {
       <div class="bici-precio">${fmtMoney(item.precio)}</div>
       <div class="bici-desc">${esc(item.descripcion)}</div>
       <div class="bici-actions">
-        <button class="btn ${enCarrito ? "btn-ghost" : "btn-primary"} btn-block btn-uppercase" onclick="toggleCarrito('${item.clave}', event)">${enCarrito ? "✓ En el carrito" : "Añadir al carrito"}</button>
+        <button class="btn ${enCarrito ? "btn-ghost" : "btn-primary"} btn-block btn-uppercase" onclick="toggleCarrito('${item.clave}', event)" ${sinStock ? "disabled" : ""}>${sinStock ? "Sin stock" : enCarrito ? "✓ En el carrito" : "Añadir al carrito"}</button>
       </div>
     </div>
   </div>`;
@@ -1476,17 +1603,47 @@ function abrirDetalle(clave) {
   $("#detalleDesc").textContent = [item.descripcion, item.extra].filter(Boolean).join("\n\n") || "Sin descripción.";
   const fotos = item.fotos;
   $("#detalleFotos").innerHTML = fotos.length
-    ? fotos.map((f) => `<img src="${esc(f)}" alt="${esc(item.titulo)}">`).join("")
+    ? fotos.map((f, idx) => `<img src="${esc(f)}" alt="${esc(item.titulo)}" id="detalleFoto${idx}">`).join("")
     : `<div class="field-hint">Todavía no tiene fotos cargadas.</div>`;
+
+  const dotsCont = $("#detalleFotosDots");
+  if (fotos.length > 1) {
+    dotsCont.innerHTML = fotos
+      .map((_, idx) => `<button type="button" class="${idx === 0 ? "active" : ""}" onclick="irAFotoDetalle(${idx})" aria-label="Foto ${idx + 1}"></button>`)
+      .join("");
+  } else {
+    dotsCont.innerHTML = "";
+  }
+
+  const sinStock = item.tipo === "p" && item.stock <= 0;
   const btn = $("#btnDetalleAgregar");
   const enCarrito = state.carrito.includes(clave);
-  btn.textContent = enCarrito ? "✓ Ya está en tu carrito" : "Agregar al carrito";
+  btn.disabled = sinStock;
+  btn.textContent = sinStock ? "Sin stock" : enCarrito ? "✓ Ya está en tu carrito" : "Agregar al carrito";
   btn.onclick = () => {
+    if (sinStock) return;
     toggleCarrito(clave);
     cerrarModal("modalDetalle");
   };
   abrirModal("modalDetalle");
 }
+
+function irAFotoDetalle(idx) {
+  const foto = $("#detalleFoto" + idx);
+  if (foto) foto.scrollIntoView({ behavior: "smooth", inline: "start", block: "nearest" });
+  $$("#detalleFotosDots button").forEach((b, i) => b.classList.toggle("active", i === idx));
+}
+$("#detalleFotos").addEventListener("scroll", () => {
+  const cont = $("#detalleFotos");
+  const imgs = $$("#detalleFotos img");
+  if (!imgs.length) return;
+  let idx = 0, minDist = Infinity;
+  imgs.forEach((img, i) => {
+    const dist = Math.abs(img.offsetLeft - cont.scrollLeft);
+    if (dist < minDist) { minDist = dist; idx = i; }
+  });
+  $$("#detalleFotosDots button").forEach((b, i) => b.classList.toggle("active", i === idx));
+});
 
 /* =========================================================
    CARRITO
@@ -1499,8 +1656,13 @@ function guardarCarrito() {
 function toggleCarrito(id, ev) {
   if (ev) ev.stopPropagation();
   const idx = state.carrito.indexOf(id);
-  if (idx === -1) state.carrito.push(id);
-  else state.carrito.splice(idx, 1);
+  if (idx === -1) {
+    const item = itemPorClave(id);
+    if (item && item.tipo === "p" && item.stock <= 0) return; // sin stock: no se puede agregar
+    state.carrito.push(id);
+  } else {
+    state.carrito.splice(idx, 1);
+  }
   guardarCarrito();
   actualizarFabCarrito();
   renderCatalogo();
