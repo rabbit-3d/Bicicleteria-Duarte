@@ -21,6 +21,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
   :root{
     --paper:#1b1e21;
@@ -40,6 +42,22 @@
     font-size:17px;
   }
   *{ box-sizing:border-box; }
+
+  /* ---------- modo administrador: mismo estilo, otro color, para que se note claramente que es otra sección ---------- */
+  body.modo-admin{
+    --amber: #4fb8c4;
+    --amber-dark: #3a95a0;
+  }
+  body.modo-admin header.top{ background:#131c1e; }
+  body.modo-admin .anuncio-bar{ display:none; }
+  body.modo-admin .btn-primary,
+  body.modo-admin .cat-chips button.active,
+  body.modo-admin .subtabs button.active,
+  body.modo-admin .footer-whatsapp-link{
+    color:#0b2225;
+  }
+  body.modo-admin .cat-chips button.active .cat-count{ color:#0b2225; background:rgba(11,34,37,.18); }
+
   html,body{ margin:0; padding:0; overflow-x:hidden; max-width:100%; }
   body{
     background:
@@ -58,6 +76,7 @@
   img{ max-width:100%; display:block; }
 
   /* ---------- header ---------- */
+  .header-sticky-wrap{ position:sticky; top:0; z-index:20; box-shadow:var(--shadow); }
   .anuncio-bar{
     background:var(--amber); color:#211a08; text-align:center;
     font-size:12.5px; font-weight:700; letter-spacing:.02em;
@@ -67,8 +86,6 @@
     background:#141619;
     color:var(--ink);
     padding:14px 18px;
-    position:sticky; top:0; z-index:20;
-    box-shadow:var(--shadow);
   }
   .top-row{ display:flex; align-items:center; gap:16px; max-width:1180px; margin:0 auto; flex-wrap:wrap; }
   .brand{ display:flex; align-items:center; gap:10px; flex-shrink:0; }
@@ -82,26 +99,28 @@
   .header-search input{ color:#fff; }
   .header-search input::placeholder{ color:#9aa1a7; }
   .header-search svg{ color:#9aa1a7; }
-  .btn-admin-toggle{
-    background:rgba(255,255,255,.08);
-    color:#EFE7D6;
-    border:1px solid rgba(255,255,255,.18);
-    padding:8px 12px;
-    border-radius:9px;
-    font-size:12.5px;
-    font-weight:600;
-    display:flex; align-items:center; gap:6px;
-    flex-shrink:0;
+  .header-icons{ display:flex; align-items:center; gap:4px; flex-shrink:0; }
+  .icon-only-btn{
+    position:relative;
+    background:none; border:none; color:#fff;
+    width:38px; height:38px; border-radius:100px;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
   }
-  .btn-admin-toggle svg{ width:15px; height:15px; }
+  .icon-only-btn:hover{ background:rgba(255,255,255,.08); }
+  .icon-only-btn svg{ width:22px; height:22px; }
+  .badge-rojo{
+    position:absolute; top:1px; right:1px;
+    background:#e53935; color:#fff; border-radius:100px;
+    min-width:16px; height:16px; padding:0 4px; display:flex; align-items:center; justify-content:center;
+    font-size:10px; font-weight:800; line-height:1;
+  }
 
   @media (max-width:640px){
     header.top{ padding:12px 14px; }
     .top-row{ gap:8px; }
     .brand{ order:1; }
     .header-search{ order:2; flex-basis:100%; }
-    .btn-carrito-header{ display:none; } /* en celular vive en la barra inferior */
-    .btn-admin-toggle{ display:none; }   /* en celular vive en la barra inferior */
+    .header-icons{ display:none; } /* en celular viven en la barra inferior */
     .brand-logo{ height:32px; }
     .brand h1{ font-size:17px; }
     .brand .sub{ font-size:11px; }
@@ -131,6 +150,19 @@
     min-width:16px; height:16px; padding:0 4px; display:flex; align-items:center; justify-content:center;
     font-size:10px; font-weight:800;
   }
+
+  /* ---------- botón flotante propio del panel de administrador ---------- */
+  .fab-panel-admin{
+    position:fixed; right:16px; bottom:16px; z-index:35;
+    width:48px; height:48px; border-radius:100px;
+    background:#141619; color:var(--ink-soft); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 6px 18px -6px rgba(0,0,0,.6);
+  }
+  .fab-panel-admin:hover{ color:var(--amber); border-color:var(--amber-dark); }
+  .fab-panel-admin svg{ width:21px; height:21px; }
+  .fab-panel-admin[hidden]{ display:none; }
+  @media (max-width:899px){ .fab-panel-admin{ bottom:calc(64px + env(safe-area-inset-bottom) + 12px); } }
 
   /* ---------- banner grande ---------- */
   .hero{
@@ -276,6 +308,65 @@
 
   /* ---------- sección "nuestro taller" ---------- */
   .taller-section{ margin-top:40px; padding-top:28px; border-top:1px solid var(--line); }
+
+  /* ---------- sección de contacto + mapa ---------- */
+  .contacto-section{
+    max-width:1180px; margin:44px auto 0; padding:0 16px;
+    display:grid; grid-template-columns:1fr; gap:22px;
+  }
+  @media (min-width:480px){ .contacto-section{ grid-template-columns:1fr 1fr; align-items:center; } }
+  .contacto-info h2{ font-size:22px; margin-bottom:4px; }
+  .contacto-info > p{ color:var(--ink-soft); font-size:14.5px; margin-bottom:18px; }
+  .contacto-dato{ display:flex; gap:12px; margin-top:16px; }
+  .contacto-dato svg{ color:var(--amber); flex-shrink:0; margin-top:2px; }
+  .contacto-dato strong{ display:block; font-size:14px; margin-bottom:2px; }
+  .contacto-dato span{ color:var(--ink-soft); font-size:13.5px; line-height:1.5; }
+  .contacto-mapa{ position:relative; isolation:isolate; }
+  #mapaTaller{
+    aspect-ratio:1/1; width:100%; max-height:380px;
+    border-radius:var(--radius); border:1px solid var(--line); overflow:hidden;
+  }
+  .link-como-llegar{
+    display:inline-block; margin-top:10px; color:var(--amber); font-size:13.5px; font-weight:700; text-decoration:none;
+  }
+
+  /* ---------- pie de página ---------- */
+  .site-footer{
+    background:#141619; border-top:1px solid var(--line);
+    margin-top:40px; padding:34px 16px 18px;
+  }
+  .footer-inner{
+    max-width:1180px; margin:0 auto;
+    display:grid; grid-template-columns:1fr; gap:28px;
+  }
+  @media (min-width:640px){ .footer-inner{ grid-template-columns:1.3fr 1fr 1fr 1fr; gap:22px; } }
+  .footer-col h4{
+    color:#fff; font-family:'Oswald'; font-size:13px; text-transform:uppercase;
+    letter-spacing:.05em; margin-bottom:12px;
+  }
+  .footer-col a{
+    display:block; color:#b9c0c6; text-decoration:none; font-size:14px; margin-bottom:9px;
+  }
+  .footer-col a:hover{ color:var(--amber); }
+  .footer-brand-head{ display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+  .footer-logo{ height:30px; width:auto; }
+  .footer-brand-head strong{ color:#fff; font-family:'Oswald'; font-size:16px; }
+  .footer-brand p{ color:#9aa1a7; font-size:13.5px; line-height:1.5; margin-bottom:14px; max-width:320px; }
+  .footer-social{ display:flex; gap:10px; }
+  .footer-social a{
+    display:flex; align-items:center; justify-content:center;
+    width:36px; height:36px; border-radius:100px; border:1px solid rgba(255,255,255,.18); color:#fff;
+    margin-bottom:0;
+  }
+  .footer-social a:hover{ border-color:var(--amber); color:var(--amber); }
+  .footer-whatsapp-link{
+    display:inline-flex !important; align-items:center; background:var(--amber); color:#211a08 !important;
+    padding:9px 16px; border-radius:9px; font-weight:700; font-size:13.5px;
+  }
+  .footer-bottom{
+    max-width:1180px; margin:26px auto 0; padding-top:16px; border-top:1px solid rgba(255,255,255,.08);
+    color:#7a8188; font-size:12px; text-align:center;
+  }
   .taller-section h2{ font-size:21px; }
   .taller-sub{ color:var(--ink-soft); font-size:14px; margin-top:4px; margin-bottom:16px; }
   .taller-carrusel{
@@ -293,23 +384,10 @@
   .admin-taller-box h3{ font-size:15.5px; margin-bottom:2px; }
   .empty svg{ width:60px; height:60px; opacity:.5; margin-bottom:10px; }
 
-  /* ---------- carrito flotante ---------- */
-  .btn-carrito-header{
-    background:rgba(255,255,255,.08); color:#EFE7D6; border:1px solid rgba(255,255,255,.18);
-    border-radius:9px; padding:8px 12px; display:flex; align-items:center; gap:7px; flex-shrink:0;
-  }
-  .btn-carrito-header svg{ width:17px; height:17px; }
-  .btn-carrito-header .cont{
-    background:var(--amber); color:#211a08; border-radius:100px;
-    min-width:19px; height:19px; padding:0 5px; display:flex; align-items:center; justify-content:center;
-    font-size:11.5px; font-weight:800;
-  }
-  .btn-carrito-header[hidden]{ display:none; }
-
   /* ---------- modal genérico ---------- */
   .modal-backdrop{
     position:fixed; inset:0; background:rgba(38,32,25,.6);
-    display:none; align-items:flex-end; justify-content:center; z-index:100;
+    display:none; align-items:flex-end; justify-content:center; z-index:2000;
   }
   .modal-backdrop.open{ display:flex; }
   .modal{
@@ -351,6 +429,8 @@
     font-size:16px; background:var(--paper-2); color:var(--ink); font-family:inherit;
   }
   .field-hint{ font-size:12px; color:var(--ink-soft); margin-top:4px; }
+  .field-row{ display:flex; gap:10px; }
+  .field-row .field{ flex:1; }
   .msg{ border-radius:10px; padding:11px 14px; font-size:13.5px; margin-bottom:14px; font-weight:600; }
   .msg-error{ background:var(--red-bg); color:var(--red); }
   .msg-ok{ background:var(--green-bg); color:var(--green); }
@@ -370,11 +450,12 @@
 
   /* ---------- panel admin ---------- */
   .admin-bar{
-    background:var(--paper-2); border:1px solid var(--line); border-radius:12px;
-    padding:12px 14px; margin-bottom:16px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    background:var(--amber); border:none; border-radius:12px;
+    padding:14px 16px; margin-bottom:18px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;
   }
-  .admin-bar strong{ font-size:13.5px; }
+  .admin-bar strong{ font-size:15px; color:#0b2225; }
   .admin-bar .btn{ margin-left:auto; }
+  .admin-bar .btn-ghost{ background:rgba(11,34,37,.12); border-color:rgba(11,34,37,.3); color:#0b2225; font-weight:700; }
   .subtabs{ display:flex; gap:8px; margin-bottom:18px; }
   .subtabs button{
     flex:1; background:var(--paper-2); border:1px solid var(--line); color:var(--ink-soft);
@@ -394,6 +475,30 @@
   .estado.no-disp{ background:var(--red-bg); color:var(--red); }
   .estado.sin-fotos{ background:rgba(227,167,46,.14); color:var(--amber); }
   .estado.no-pub{ background:var(--paper-2); color:var(--ink-soft); border:1px solid var(--line); }
+
+  /* ---------- preguntas frecuentes (público) ---------- */
+  .faq-item{ border-bottom:1px solid var(--line); }
+  .faq-item:last-child{ border-bottom:none; }
+  .faq-pregunta{
+    width:100%; background:none; border:none; color:var(--ink);
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    padding:14px 2px; font-size:15px; font-weight:600; text-align:left;
+  }
+  .faq-pregunta .chev{ transition:transform .15s ease; flex-shrink:0; color:var(--ink-soft); }
+  .faq-item.abierta .faq-pregunta .chev{ transform:rotate(180deg); }
+  .faq-respuesta{
+    max-height:0; overflow:hidden; color:var(--ink-soft); font-size:14px; line-height:1.55;
+    transition:max-height .2s ease;
+  }
+  .faq-item.abierta .faq-respuesta{ max-height:400px; padding-bottom:14px; }
+
+  /* ---------- FAQ (admin) ---------- */
+  .admin-faq-item{
+    background:var(--card); border:1px solid var(--line); border-radius:12px; padding:12px 14px; margin-bottom:10px;
+  }
+  .admin-faq-item .p{ font-weight:600; font-size:14px; margin-bottom:4px; }
+  .admin-faq-item .r{ color:var(--ink-soft); font-size:13px; line-height:1.4; margin-bottom:10px; }
+  .admin-faq-item .btns{ display:flex; gap:8px; }
 
   .ficha-origen{
     background:var(--paper-2); border:1px solid var(--line); border-radius:10px;
@@ -420,30 +525,34 @@
 </head>
 <body>
 
-<div class="anuncio-bar">Consultas y envíos por WhatsApp · Taller y venta de repuestos</div>
-<header class="top">
-  <div class="top-row">
-    <div class="brand">
-      <img src="logo-el-coya-header.png" alt="El Coya" class="brand-logo">
-      <div>
-        <h1>El Coya</h1>
-        <div class="sub">Bicicletería y taller</div>
+<div class="header-sticky-wrap">
+  <div class="anuncio-bar">Consultas y envíos por WhatsApp · Taller y venta de repuestos</div>
+  <header class="top">
+    <div class="top-row">
+      <div class="brand">
+        <img src="logo-el-coya-header.png" alt="El Coya" class="brand-logo">
+        <div>
+          <h1>El Coya</h1>
+          <div class="sub">Bicicletería y taller</div>
+        </div>
+      </div>
+      <div class="search-row header-search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input type="search" id="buscadorPublico" placeholder="Buscar producto..." oninput="renderCatalogo()">
+      </div>
+      <div class="header-icons">
+        <button type="button" class="icon-only-btn" id="btnAdminToggle" title="Cuenta">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21a8 8 0 10-16 0"/><circle cx="12" cy="7" r="4"/></svg>
+          <span class="visually-hidden" id="btnAdminToggleTexto">Iniciar sesión</span>
+        </button>
+        <button type="button" class="icon-only-btn" id="fabCarrito" onclick="abrirCarrito()" title="Carrito">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+          <span class="badge-rojo" id="contCarrito">0</span>
+        </button>
       </div>
     </div>
-    <div class="search-row header-search">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-      <input type="search" id="buscadorPublico" placeholder="Buscar producto..." oninput="renderCatalogo()">
-    </div>
-    <button type="button" class="btn-carrito-header" id="fabCarrito" hidden onclick="abrirCarrito()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
-      <span class="cont" id="contCarrito">0</span>
-    </button>
-    <button type="button" class="btn-admin-toggle" id="btnAdminToggle">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21a8 8 0 10-16 0"/><circle cx="12" cy="7" r="4"/></svg>
-      <span id="btnAdminToggleTexto">Iniciar sesión</span>
-    </button>
-  </div>
-</header>
+  </header>
+</div>
 
 <nav class="bottom-nav-app" id="bottomNavApp">
   <button type="button" class="nav-item active" data-accion="inicio">
@@ -464,6 +573,10 @@
     <span id="navCuentaTexto">Cuenta</span>
   </button>
 </nav>
+
+<button type="button" class="fab-panel-admin" id="fabPanelAdmin" title="Panel de administrador">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09a1.65 1.65 0 001.51-1 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+</button>
 
 <section class="hero">
   <div class="hero-inner">
@@ -496,12 +609,15 @@
   <div id="vistaAdmin" hidden>
     <div class="admin-bar">
       <strong>Modo administrador</strong>
-      <button type="button" class="btn btn-ghost btn-sm" id="btnSalirAdmin">Salir</button>
+      <button type="button" class="btn btn-ghost btn-sm" id="btnSalirAdmin">← Volver a la tienda</button>
     </div>
 
     <div class="subtabs" id="adminSubtabs">
       <button type="button" data-panel="productos" class="active">Productos</button>
       <button type="button" data-panel="bicicletas">Bicicletas</button>
+      <button type="button" data-panel="taller">Taller</button>
+      <button type="button" data-panel="contacto">Contacto</button>
+      <button type="button" data-panel="ayuda">Ayuda</button>
     </div>
 
     <div id="panelAdminProductos">
@@ -536,19 +652,116 @@
       <div id="listaBicisAdmin"></div>
     </div>
 
-    <div class="admin-taller-box">
-      <h3>Fotos del taller</h3>
-      <p class="field-hint">Se muestran en el carrusel "Nuestro taller" al final de la página.</p>
-      <div class="fotos-admin-grid" id="tallerAdminGrid">
-        <label class="foto-admin-add" id="btnAgregarFotoTaller">
-          ＋
-          <input type="file" accept="image/*" multiple class="visually-hidden" id="inputFotosTaller">
-        </label>
+    <div id="panelAdminTaller" hidden>
+      <div class="admin-taller-box">
+        <h3>Fotos del taller</h3>
+        <p class="field-hint">Se muestran en el carrusel "Nuestro taller" al final de la página.</p>
+        <div class="fotos-admin-grid" id="tallerAdminGrid">
+          <label class="foto-admin-add" id="btnAgregarFotoTaller">
+            ＋
+            <input type="file" accept="image/*" multiple class="visually-hidden" id="inputFotosTaller">
+          </label>
+        </div>
+        <div class="field-hint" id="tallerSubiendoTexto"></div>
       </div>
-      <div class="field-hint" id="tallerSubiendoTexto"></div>
+    </div>
+
+    <div id="panelAdminContacto" hidden>
+      <p class="field-hint" style="margin-bottom:12px;">Estos datos se muestran en la sección "¿Tenés alguna consulta?" y en el mapa, al final de la página.</p>
+      <div id="msgConfigAdmin"></div>
+      <form id="formConfig">
+        <div class="field">
+          <label for="campoConfigDireccion">Dirección</label>
+          <textarea id="campoConfigDireccion" rows="2" placeholder="Ej: Calle Lavalle Nro 489, Italó - Córdoba"></textarea>
+        </div>
+        <div class="field">
+          <label for="campoConfigHorarios">Horarios de atención</label>
+          <textarea id="campoConfigHorarios" rows="3" placeholder="Ej: Lunes a viernes 9 a 13 y 16 a 20hs&#10;Sábados 9 a 13hs"></textarea>
+          <div class="field-hint">Dejalo vacío si no querés mostrar horarios.</div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="campoConfigLat">Latitud</label>
+            <input type="number" step="any" id="campoConfigLat" placeholder="-34.79">
+          </div>
+          <div class="field">
+            <label for="campoConfigLng">Longitud</label>
+            <input type="number" step="any" id="campoConfigLng" placeholder="-63.78">
+          </div>
+        </div>
+        <div class="field-hint" style="margin:-6px 0 16px;">Tip: buscá la dirección en Google Maps, click derecho sobre el pin → copiar las coordenadas, y las pegás acá (primer número = Latitud, segundo = Longitud).</div>
+        <button type="submit" class="btn btn-primary btn-block" id="btnGuardarConfig">Guardar</button>
+      </form>
+    </div>
+
+    <div id="panelAdminAyuda" hidden>
+      <p class="field-hint" style="margin-bottom:12px;">Estas preguntas se muestran cuando alguien toca "Preguntas frecuentes" al final de la página.</p>
+      <button type="button" class="btn btn-primary btn-block" id="btnNuevaFaq" style="margin-bottom:16px;">
+        ＋ Agregar pregunta
+      </button>
+      <div id="msgAdminFaq"></div>
+      <div id="listaFaqAdmin"></div>
     </div>
   </div>
 </main>
+
+<section class="contacto-section" id="footerContacto">
+  <div class="contacto-inner">
+    <div class="contacto-info">
+      <h2>¿Tenés alguna consulta?</h2>
+      <p>Escribinos y te respondemos a la brevedad.</p>
+      <a href="https://wa.me/5492302548364" target="_blank" rel="noopener" class="btn btn-primary btn-lg" style="text-decoration:none; margin-bottom:20px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.5 14.4c-.3-.1-1.6-.8-1.9-.9-.2-.1-.4-.1-.6.1-.2.3-.7.9-.8 1-.2.2-.3.2-.5.1-.3-.1-1.1-.4-2.1-1.3-.8-.7-1.3-1.6-1.5-1.8-.1-.2 0-.4.1-.5.1-.1.3-.3.4-.5.1-.1.2-.3.2-.4.1-.2 0-.3 0-.5-.1-.1-.6-1.5-.8-2-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.2.3-.9.9-.9 2.2s.9 2.5 1.1 2.7c.1.2 1.9 2.9 4.6 4 .6.3 1.1.4 1.5.6.6.2 1.2.2 1.6.1.5-.1 1.6-.6 1.8-1.3.2-.6.2-1.1.2-1.3-.1-.1-.3-.2-.6-.3z"/><path d="M12 2a10 10 0 00-8.5 15.2L2 22l4.9-1.5A10 10 0 1012 2zm0 18a8 8 0 01-4.1-1.1l-.3-.2-3 .9.9-2.9-.2-.3A8 8 0 1112 20z"/></svg>
+        Escribinos por WhatsApp
+      </a>
+      <div class="contacto-dato">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <div><strong>Dirección</strong><span id="contactoDireccionTexto"></span></div>
+      </div>
+      <div class="contacto-dato" id="contactoHorarioWrap" hidden>
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+        <div><strong>Horarios</strong><span id="contactoHorarioTexto"></span></div>
+      </div>
+    </div>
+    <div class="contacto-mapa">
+      <div id="mapaTaller"></div>
+      <a href="#" id="linkComoLlegar" target="_blank" rel="noopener" class="link-como-llegar">Cómo llegar ↗</a>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-col footer-brand">
+      <div class="footer-brand-head">
+        <img src="logo-el-coya-header.png" alt="El Coya" class="footer-logo">
+        <strong>El Coya</strong>
+      </div>
+      <p>Bicicletería y taller. Repuestos, accesorios y bicicletas en stock.</p>
+      <div class="footer-social">
+        <a href="https://wa.me/5492302548364" target="_blank" rel="noopener" aria-label="Escribinos por WhatsApp" title="WhatsApp">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.5 14.4c-.3-.1-1.6-.8-1.9-.9-.2-.1-.4-.1-.6.1-.2.3-.7.9-.8 1-.2.2-.3.2-.5.1-.3-.1-1.1-.4-2.1-1.3-.8-.7-1.3-1.6-1.5-1.8-.1-.2 0-.4.1-.5.1-.1.3-.3.4-.5.1-.1.2-.3.2-.4.1-.2 0-.3 0-.5-.1-.1-.6-1.5-.8-2-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.2.3-.9.9-.9 2.2s.9 2.5 1.1 2.7c.1.2 1.9 2.9 4.6 4 .6.3 1.1.4 1.5.6.6.2 1.2.2 1.6.1.5-.1 1.6-.6 1.8-1.3.2-.6.2-1.1.2-1.3-.1-.1-.3-.2-.6-.3z"/><path d="M12 2a10 10 0 00-8.5 15.2L2 22l4.9-1.5A10 10 0 1012 2zm0 18a8 8 0 01-4.1-1.1l-.3-.2-3 .9.9-2.9-.2-.3A8 8 0 1112 20z"/></svg>
+        </a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Menú</h4>
+      <a href="#catalogo-anchor">Catálogo</a>
+      <a href="#tallerSection">Taller</a>
+      <a href="#footerContacto">Contacto</a>
+    </div>
+    <div class="footer-col">
+      <h4>Ayuda</h4>
+      <a href="#" id="linkFaq" onclick="event.preventDefault(); abrirFaqPublica();">Preguntas frecuentes</a>
+      <a href="#" id="linkSugerencias" target="_blank" rel="noopener">Libro de sugerencias y reclamos</a>
+    </div>
+    <div class="footer-col">
+      <h4>Contacto</h4>
+      <a href="https://wa.me/5492302548364" target="_blank" rel="noopener" class="footer-whatsapp-link">Escribinos por WhatsApp</a>
+    </div>
+  </div>
+  <div class="footer-bottom">El Coya · Bicicletería y taller</div>
+</footer>
 
 <!-- ============ MODAL: detalle de bici ============ -->
 <div class="modal-backdrop" id="modalDetalle">
@@ -584,6 +797,20 @@
         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.5 14.4c-.3-.1-1.6-.8-1.9-.9-.2-.1-.4-.1-.6.1-.2.3-.7.9-.8 1-.2.2-.3.2-.5.1-.3-.1-1.1-.4-2.1-1.3-.8-.7-1.3-1.6-1.5-1.8-.1-.2 0-.4.1-.5.1-.1.3-.3.4-.5.1-.1.2-.3.2-.4.1-.2 0-.3 0-.5-.1-.1-.6-1.5-.8-2-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.2.3-.9.9-.9 2.2s.9 2.5 1.1 2.7c.1.2 1.9 2.9 4.6 4 .6.3 1.1.4 1.5.6.6.2 1.2.2 1.6.1.5-.1 1.6-.6 1.8-1.3.2-.6.2-1.1.2-1.3-.1-.1-.3-.2-.6-.3z"/><path d="M12 2a10 10 0 00-8.5 15.2L2 22l4.9-1.5A10 10 0 1012 2zm0 18a8 8 0 01-4.1-1.1l-.3-.2-3 .9.9-2.9-.2-.3A8 8 0 1112 20z"/></svg>
         Consultar por WhatsApp
       </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: preguntas frecuentes ============ -->
+<div class="modal-backdrop" id="modalFaq">
+  <div class="modal">
+    <div class="modal-head">
+      <h2>Preguntas frecuentes</h2>
+      <button class="modal-close" onclick="cerrarModal('modalFaq')" aria-label="Cerrar">✕</button>
+    </div>
+    <div id="faqContenido"></div>
+    <div class="modal-footer">
+      <a href="#" id="linkFaqWhatsapp" target="_blank" rel="noopener" class="btn btn-ghost btn-block" style="text-decoration:none;">¿No encontraste tu respuesta? Escribinos por WhatsApp</a>
     </div>
   </div>
 </div>
@@ -707,6 +934,31 @@
   </div>
 </div>
 
+<!-- ============ MODAL: agregar/editar pregunta frecuente ============ -->
+<div class="modal-backdrop" id="modalFormFaq">
+  <div class="modal" style="max-width:500px;">
+    <div class="modal-head">
+      <h2 id="formFaqTitulo">Nueva pregunta</h2>
+      <button class="modal-close" onclick="cerrarModal('modalFormFaq')" aria-label="Cerrar">✕</button>
+    </div>
+    <div id="msgFormFaq"></div>
+    <form id="formFaq">
+      <div class="field">
+        <label for="campoFaqPregunta">Pregunta</label>
+        <input type="text" id="campoFaqPregunta" placeholder="Ej: ¿Hacen envíos?">
+      </div>
+      <div class="field">
+        <label for="campoFaqRespuesta">Respuesta</label>
+        <textarea id="campoFaqRespuesta" rows="4" placeholder="Escribí la respuesta..."></textarea>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" onclick="cerrarModal('modalFormFaq')">Cancelar</button>
+        <button type="submit" class="btn btn-primary" id="btnGuardarFaq">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <script>
 /* =========================================================
    CONFIG
@@ -750,6 +1002,10 @@ const state = {
   columnasFormTemp: [],  // columnas elegidas para mostrar en la publicación actual
   editandoItemId: null,
   editandoBiciId: null,
+  config: null, // fila de elcoya_stock_config: {id, direccion, horarios, lat, lng}
+  mapaInicializado: false,
+  faqs: [],
+  editandoFaqId: null,
 };
 
 try {
@@ -859,6 +1115,179 @@ async function cargarTallerFotos() {
   renderTallerCarrusel();
   if (state.esAdmin) renderTallerAdminGrid();
 }
+
+/* =========================================================
+   CONFIG: dirección, horarios y ubicación del mapa (editable desde el admin)
+   ========================================================= */
+async function cargarConfig() {
+  const { data, error } = await supabaseClient.from("elcoya_stock_config").select("*").limit(1).maybeSingle();
+  if (error || !data) return;
+  state.config = data;
+  renderConfigPublica();
+  if (state.esAdmin) renderFormConfigAdmin();
+}
+
+function renderConfigPublica() {
+  const cfg = state.config;
+  if (!cfg) return;
+
+  const direccionEl = $("#contactoDireccionTexto");
+  if (direccionEl) direccionEl.innerHTML = esc(cfg.direccion || "").replace(/\n/g, "<br>");
+
+  const horarioWrap = $("#contactoHorarioWrap");
+  const horarioTexto = $("#contactoHorarioTexto");
+  if (horarioWrap && horarioTexto) {
+    if (cfg.horarios && cfg.horarios.trim()) {
+      horarioTexto.innerHTML = esc(cfg.horarios).replace(/\n/g, "<br>");
+      horarioWrap.hidden = false;
+    } else {
+      horarioWrap.hidden = true;
+    }
+  }
+
+  const linkComoLlegar = $("#linkComoLlegar");
+  if (linkComoLlegar && cfg.lat != null && cfg.lng != null) {
+    linkComoLlegar.href = `https://www.google.com/maps/dir/?api=1&destination=${cfg.lat},${cfg.lng}`;
+  }
+
+  inicializarOActualizarMapa();
+}
+
+function inicializarOActualizarMapa() {
+  const cfg = state.config;
+  if (!window.L || !cfg || cfg.lat == null || cfg.lng == null) return;
+  const coords = [Number(cfg.lat), Number(cfg.lng)];
+  if (!state.mapaInicializado) {
+    state._mapaTaller = L.map("mapaTaller", { scrollWheelZoom: false }).setView(coords, 17);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      maxZoom: 19,
+    }).addTo(state._mapaTaller);
+    state._marcadorTaller = L.marker(coords).addTo(state._mapaTaller);
+    state.mapaInicializado = true;
+    setTimeout(() => state._mapaTaller.invalidateSize(), 150);
+  } else {
+    state._mapaTaller.setView(coords, 17);
+    state._marcadorTaller.setLatLng(coords);
+  }
+  state._marcadorTaller.bindPopup(`<strong>El Coya</strong><br>${esc(cfg.direccion || "")}`);
+}
+
+/* =========================================================
+   PREGUNTAS FRECUENTES (editables desde el admin)
+   ========================================================= */
+async function cargarFaqs() {
+  const { data, error } = await supabaseClient.from("elcoya_stock_faq").select("*").order("orden", { ascending: true });
+  if (error) return;
+  state.faqs = data || [];
+  if (state.esAdmin && state.panelAdmin === "ayuda") renderListaFaqAdmin();
+}
+
+function abrirFaqPublica() {
+  const cont = $("#faqContenido");
+  if (!state.faqs.length) {
+    cont.innerHTML = `<p class="field-hint">Todavía no cargamos preguntas frecuentes. ¡Escribinos y con gusto te ayudamos!</p>`;
+  } else {
+    cont.innerHTML = state.faqs
+      .map(
+        (f, idx) => `
+      <div class="faq-item" id="faqItem${idx}">
+        <button type="button" class="faq-pregunta" onclick="toggleFaqItem(${idx})">
+          ${esc(f.pregunta)}
+          <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="faq-respuesta">${esc(f.respuesta).replace(/\n/g, "<br>")}</div>
+      </div>`
+      )
+      .join("");
+  }
+  const linkWa = $("#linkFaqWhatsapp");
+  if (linkWa) linkWa.href = `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("Hola! Tengo una consulta sobre El Coya:")}`;
+  abrirModal("modalFaq");
+}
+function toggleFaqItem(idx) {
+  const item = $("#faqItem" + idx);
+  if (item) item.classList.toggle("abierta");
+}
+
+function renderListaFaqAdmin() {
+  const cont = $("#listaFaqAdmin");
+  if (!state.faqs.length) {
+    cont.innerHTML = `<div class="empty">Todavía no cargaste ninguna pregunta.</div>`;
+    return;
+  }
+  cont.innerHTML = state.faqs
+    .map(
+      (f) => `
+    <div class="admin-faq-item">
+      <div class="p">${esc(f.pregunta)}</div>
+      <div class="r">${esc(f.respuesta)}</div>
+      <div class="btns">
+        <button class="btn btn-ghost btn-sm" onclick="abrirFormFaqEditar('${f.id}')">Editar</button>
+        <button class="btn btn-danger btn-sm" onclick="borrarFaq('${f.id}')">Borrar</button>
+      </div>
+    </div>`
+    )
+    .join("");
+}
+
+$("#btnNuevaFaq").addEventListener("click", () => {
+  state.editandoFaqId = null;
+  $("#formFaqTitulo").textContent = "Nueva pregunta";
+  $("#msgFormFaq").innerHTML = "";
+  $("#campoFaqPregunta").value = "";
+  $("#campoFaqRespuesta").value = "";
+  abrirModal("modalFormFaq");
+});
+
+function abrirFormFaqEditar(id) {
+  const f = state.faqs.find((x) => x.id === id);
+  if (!f) return;
+  state.editandoFaqId = id;
+  $("#formFaqTitulo").textContent = "Editar pregunta";
+  $("#msgFormFaq").innerHTML = "";
+  $("#campoFaqPregunta").value = f.pregunta || "";
+  $("#campoFaqRespuesta").value = f.respuesta || "";
+  abrirModal("modalFormFaq");
+}
+
+function borrarFaq(id) {
+  if (!confirm("¿Borrar esta pregunta? No se puede deshacer.")) return;
+  supabaseClient
+    .from("elcoya_stock_faq")
+    .delete()
+    .eq("id", id)
+    .then(({ error }) => {
+      if (error) { alert("No se pudo borrar: " + error.message); return; }
+      cargarFaqs().then(renderListaFaqAdmin);
+    });
+}
+
+$("#formFaq").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const msg = $("#msgFormFaq");
+  msg.innerHTML = "";
+  const pregunta = $("#campoFaqPregunta").value.trim();
+  const respuesta = $("#campoFaqRespuesta").value.trim();
+  if (!pregunta || !respuesta) {
+    msg.innerHTML = `<div class="msg msg-error">Completá la pregunta y la respuesta.</div>`;
+    return;
+  }
+  const payload = { pregunta, respuesta, orden: state.editandoFaqId ? undefined : state.faqs.length };
+  if (payload.orden === undefined) delete payload.orden;
+
+  const query = state.editandoFaqId
+    ? supabaseClient.from("elcoya_stock_faq").update(payload).eq("id", state.editandoFaqId)
+    : supabaseClient.from("elcoya_stock_faq").insert(payload);
+  const { error } = await query;
+  if (error) {
+    msg.innerHTML = `<div class="msg msg-error">No se pudo guardar: ${esc(error.message)}</div>`;
+    return;
+  }
+  cerrarModal("modalFormFaq");
+  await cargarFaqs();
+  renderListaFaqAdmin();
+});
 
 function renderTallerCarrusel() {
   const seccion = $("#tallerSection");
@@ -1080,7 +1509,7 @@ function actualizarFabCarrito() {
   const fab = $("#fabCarrito");
   const n = state.carrito.length;
   $("#contCarrito").textContent = n;
-  fab.hidden = n === 0 || state.esAdmin;
+  if (fab) fab.hidden = state.esAdmin;
   const navBadge = $("#contCarritoNav");
   if (navBadge) {
     navBadge.textContent = n;
@@ -1214,6 +1643,8 @@ function entrarAdmin() {
   state.esAdmin = true;
   $("#vistaPublica").hidden = true;
   $("#vistaAdmin").hidden = false;
+  document.body.classList.add("modo-admin");
+  window.scrollTo(0, 0);
   actualizarTextoBotonAdmin();
   actualizarFabCarrito();
   cargarBicis();
@@ -1223,6 +1654,8 @@ function salirAdmin() {
   state.esAdmin = false;
   $("#vistaPublica").hidden = false;
   $("#vistaAdmin").hidden = true;
+  document.body.classList.remove("modo-admin");
+  window.scrollTo(0, 0);
   actualizarTextoBotonAdmin();
   actualizarFabCarrito();
   cargarBicis();
@@ -1235,9 +1668,12 @@ function actualizarTextoBotonAdmin() {
   const itemCuenta = $('.nav-item[data-accion="cuenta"]');
   if (itemCuenta) itemCuenta.classList.toggle("active", state.esAdmin);
   const nav = $("#bottomNavApp");
-  if (nav) nav.hidden = state.esAdmin; // el panel de admin ya tiene su propio botón "Salir" arriba
+  if (nav) nav.hidden = state.esAdmin; // el panel de admin ya tiene su propio botón para volver, arriba
+  const fabAdmin = $("#fabPanelAdmin");
+  if (fabAdmin) fabAdmin.hidden = state.esAdmin;
 }
 $("#btnSalirAdmin").addEventListener("click", salirAdmin);
+$("#fabPanelAdmin").addEventListener("click", manejarClickCuenta);
 
 // ---------- barra de navegación inferior (celular) ----------
 $$("#bottomNavApp .nav-item").forEach((btn) => {
@@ -1361,6 +1797,42 @@ $("#adminSubtabs").addEventListener("click", (e) => {
   $$("#adminSubtabs button").forEach((b) => b.classList.toggle("active", b === btn));
   $("#panelAdminProductos").hidden = state.panelAdmin !== "productos";
   $("#panelAdminBicicletas").hidden = state.panelAdmin !== "bicicletas";
+  $("#panelAdminTaller").hidden = state.panelAdmin !== "taller";
+  $("#panelAdminContacto").hidden = state.panelAdmin !== "contacto";
+  $("#panelAdminAyuda").hidden = state.panelAdmin !== "ayuda";
+  if (state.panelAdmin === "contacto") renderFormConfigAdmin();
+  if (state.panelAdmin === "ayuda") renderListaFaqAdmin();
+});
+
+function renderFormConfigAdmin() {
+  const cfg = state.config;
+  if (!cfg) return;
+  $("#campoConfigDireccion").value = cfg.direccion || "";
+  $("#campoConfigHorarios").value = cfg.horarios || "";
+  $("#campoConfigLat").value = cfg.lat != null ? cfg.lat : "";
+  $("#campoConfigLng").value = cfg.lng != null ? cfg.lng : "";
+}
+
+$("#formConfig").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const msg = $("#msgConfigAdmin");
+  msg.innerHTML = "";
+  if (!state.config) return;
+
+  const payload = {
+    direccion: $("#campoConfigDireccion").value.trim(),
+    horarios: $("#campoConfigHorarios").value.trim(),
+    lat: $("#campoConfigLat").value ? Number($("#campoConfigLat").value) : null,
+    lng: $("#campoConfigLng").value ? Number($("#campoConfigLng").value) : null,
+    updated_at: new Date().toISOString(),
+  };
+  const { error } = await supabaseClient.from("elcoya_stock_config").update(payload).eq("id", state.config.id);
+  if (error) {
+    msg.innerHTML = `<div class="msg msg-error">No se pudo guardar: ${esc(error.message)}</div>`;
+    return;
+  }
+  msg.innerHTML = `<div class="msg msg-ok">¡Guardado! Ya se actualizó en la página.</div>`;
+  await cargarConfig();
 });
 
 /* =========================================================
@@ -1677,6 +2149,12 @@ $("#formBici").addEventListener("submit", async (e) => {
 actualizarTextoBotonAdmin();
 cargarBicis();
 cargarTallerFotos();
+cargarConfig();
+cargarFaqs();
+
+// link de "Libro de sugerencias y reclamos" en el pie de página: va directo a WhatsApp con el mensaje ya armado
+const linkSugerencias = $("#linkSugerencias");
+if (linkSugerencias) linkSugerencias.href = `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent("Hola! Quiero dejar una sugerencia/reclamo:")}`;
 </script>
 </body>
 </html>
