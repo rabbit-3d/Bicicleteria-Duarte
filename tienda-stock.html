@@ -58,7 +58,7 @@
   }
   body.modo-admin .cat-chips button.active .cat-count{ color:#0b2225; background:rgba(11,34,37,.18); }
 
-  html,body{ margin:0; padding:0; overflow-x:hidden; max-width:100%; }
+  html,body{ margin:0; padding:0; overflow-x:hidden; overflow-x:clip; max-width:100%; }
   body{
     background:
       radial-gradient(900px 500px at 100% -8%, rgba(227,167,46,0.07), transparent 60%),
@@ -426,11 +426,11 @@
   .taller-section h2{ font-size:21px; }
   .taller-sub{ color:var(--ink-soft); font-size:14px; margin-top:4px; margin-bottom:16px; }
   .taller-carrusel{
-    display:flex; gap:12px; overflow-x:auto; padding-bottom:6px;
+    display:flex; gap:16px; overflow-x:auto; padding-bottom:8px;
     -webkit-overflow-scrolling:touch; scroll-snap-type:x proximity;
   }
   .taller-carrusel img{
-    width:240px; height:180px; object-fit:cover; border-radius:14px; flex:0 0 auto;
+    width:min(82vw, 460px); aspect-ratio:4/3; object-fit:cover; border-radius:16px; flex:0 0 auto;
     scroll-snap-align:start; box-shadow:var(--shadow);
   }
   .admin-taller-box{
@@ -1649,7 +1649,6 @@ function productoCardHtml(item) {
       <div class="bici-cat-badge">${esc(item.categoriaNombre)}</div>
       <div class="bici-titulo" onclick="abrirDetalle('${item.clave}')" style="cursor:pointer;">${esc(item.titulo)}</div>
       <div class="bici-precio">${fmtMoney(item.precio)}</div>
-      <div class="bici-desc">${esc(item.descripcion)}</div>
       <div class="bici-actions">
         <button class="btn ${enCarrito ? "btn-ghost" : "btn-primary"} btn-block btn-uppercase" onclick="toggleCarrito('${item.clave}', event)" ${sinStock ? "disabled" : ""}>${sinStock ? "Sin stock" : enCarrito ? "✓ En el carrito" : "Añadir al carrito"}</button>
       </div>
