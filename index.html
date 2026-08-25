@@ -580,6 +580,10 @@ table.tabla-items{ width:100%; border-collapse:collapse; min-width:460px; }
   border-bottom:1px solid var(--border);
 }
 .tabla-items thead th.num{ text-align:right; }
+.th-editable-col{ cursor:pointer; }
+.th-editable-col:hover{ color:var(--amber); }
+.th-editable-col::after{ content:" ✎"; opacity:.45; font-size:9px; }
+.th-editable-col:hover::after{ opacity:1; }
 .tabla-items tbody td{
   padding: 10px 12px;
   border-bottom:1px solid var(--border);
@@ -698,6 +702,17 @@ div.card{
   letter-spacing:0.02em;
   color: var(--text);
 }
+.columna-tile-renombrar{
+  background:none;
+  border:none;
+  color: var(--text-dim);
+  font-size:13px;
+  line-height:1;
+  padding:0;
+  min-height:0;
+  cursor:pointer;
+}
+.columna-tile-renombrar:active{ color: var(--amber); }
 .columna-tile-quitar{
   background:none;
   border:none;
@@ -2352,7 +2367,7 @@ function construirBloqueCategoriaProducto(cat) {
 
   const tablaHtml = filas.length
     ? `<div class="tabla-wrap"><table class="tabla-items">
-        <thead><tr>${cols.map((c) => `<th>${escapeHtml(c)}</th>`).join("") || "<th>Producto</th>"}<th class="num">Costo</th><th class="num">Venta</th><th class="num">Ganancia</th><th class="num">Stock</th><th>Acciones</th></tr></thead>
+        <thead><tr>${cols.map((c) => `<th class="th-editable-col" data-cat-id="${cat.id}" data-col="${escapeHtml(c)}" title="Tocar para renombrar esta columna">${escapeHtml(c)}</th>`).join("") || "<th>Producto</th>"}<th class="num">Costo</th><th class="num">Venta</th><th class="num">Ganancia</th><th class="num">Stock</th><th>Acciones</th></tr></thead>
         <tbody>${filas.map((f) => (cols.length ? filaProductoPorCampoHtml(cat, cols, f) : filaProductoSinColumnasHtml(cat, f))).join("")}</tbody>
       </table></div><div class="tabla-scroll-hint">‹ Deslizá para ver más ›</div>`
     : `<div class="empty">Todavía no cargaste productos en esta categoría.</div>`;
@@ -2479,6 +2494,7 @@ function renderColumnasChips() {
         <span>${escapeHtml(col.nombre)}</span>
         <button type="button" class="chip-vis${col.producto ? " activo" : ""}" data-idx="${i}" data-ambito="producto">Prod</button>
         <button type="button" class="chip-vis${col.pedido ? " activo" : ""}" data-idx="${i}" data-ambito="pedido">Ped</button>
+        <button type="button" class="columna-tile-renombrar" data-idx="${i}" title="Renombrar">✎</button>
         <button type="button" class="columna-tile-quitar" data-idx="${i}" title="Quitar">×</button>
       </div>`
     )
@@ -2487,6 +2503,36 @@ function renderColumnasChips() {
   const cont2 = $("#columnasChipsProducto");
   if (cont1) cont1.innerHTML = html;
   if (cont2) cont2.innerHTML = html;
+}
+
+async function renombrarColumnaTemp(idx) {
+  const col = state.columnasTemp[idx];
+  if (!col) return;
+  const nuevoNombre = await confirmarAccion(
+    "¿Cómo querés que se llame esta columna?",
+    "Renombrar",
+    "Cancelar",
+    { pedirTexto: true, valorInicial: col.nombre, placeholder: "Nombre de la columna" }
+  );
+  if (!nuevoNombre || nuevoNombre === col.nombre) return;
+  if (esCampoFijo(nuevoNombre)) {
+    mostrarError(`"${nuevoNombre}" ya es una columna fija, no se puede usar ese nombre.`);
+    return;
+  }
+  const yaExiste = state.columnasTemp.some((c, i) => i !== idx && normalizar(c.nombre) === normalizar(nuevoNombre));
+  if (yaExiste) {
+    mostrarError(`Ya existe una columna llamada "${nuevoNombre}" en este tipo.`);
+    return;
+  }
+  // se guarda el cambio de nombre para migrar, al guardar, los valores ya cargados
+  // en los productos/pedidos existentes (si no, quedarían "huérfanos" bajo el nombre viejo)
+  if (!state.columnasRenombradas) state.columnasRenombradas = [];
+  const nombreOriginal = col.nombreOriginal || col.nombre;
+  state.columnasRenombradas = state.columnasRenombradas.filter((r) => r.de !== nombreOriginal);
+  state.columnasRenombradas.push({ de: nombreOriginal, a: nuevoNombre });
+  col.nombre = nuevoNombre;
+  col.nombreOriginal = nombreOriginal;
+  renderColumnasChips();
 }
 
 async function agregarColumnaNueva(ambitoPorDefecto) {
@@ -2517,6 +2563,11 @@ async function agregarColumnaNueva(ambitoPorDefecto) {
 }
 
 function manejarClickColumnaTile(e) {
+  const btnRenombrar = e.target.closest(".columna-tile-renombrar");
+  if (btnRenombrar) {
+    renombrarColumnaTemp(parseInt(btnRenombrar.dataset.idx));
+    return;
+  }
   const btnQuitar = e.target.closest(".columna-tile-quitar");
   if (btnQuitar) {
     state.columnasTemp.splice(parseInt(btnQuitar.dataset.idx), 1);
@@ -2772,6 +2823,7 @@ function prepararFormularioCategoria(categoria, contexto) {
     categoria && Array.isArray(categoria.columnas)
       ? categoria.columnas.filter((c) => !esCampoFijo(c.nombre)).map((c) => ({ ...c }))
       : [];
+  state.columnasRenombradas = [];
   renderColumnasChips();
 
   if (esProducto) {
@@ -2833,12 +2885,18 @@ $("#formCategoria").addEventListener("submit", async (e) => {
   const nombre = form.nombre.value.trim();
   if (!nombre) return mostrarError("Falta el nombre de la categoría.");
 
-  const payload = { nombre, columnas: state.columnasTemp };
+  const columnasLimpias = state.columnasTemp.map(({ nombre, producto, pedido }) => ({ nombre, producto, pedido }));
+  const payload = { nombre, columnas: columnasLimpias };
 
   const { data: catGuardada, error } = editId
     ? await supabaseClient.from("elcoya_items_categorias").update(payload).eq("id", editId).select().single()
     : await supabaseClient.from("elcoya_items_categorias").insert(payload).select().single();
   if (error) return mostrarError("No se pudo guardar la categoría: " + error.message);
+
+  if (editId && state.columnasRenombradas && state.columnasRenombradas.length) {
+    await migrarColumnasRenombradas(editId, state.columnasRenombradas);
+  }
+  state.columnasRenombradas = [];
 
   form.reset();
   prepararFormularioCategoria(null, "pedido");
@@ -2852,6 +2910,67 @@ $("#formCategoria").addEventListener("submit", async (e) => {
     if (categoria) abrirFormularioItemPedido(categoria, null, true);
   }
 });
+
+// si se renombró alguna columna al editar una categoría, actualiza esa misma clave
+// dentro del "valores" (jsonb) de todos los productos/pedidos ya cargados en esa categoría,
+// para que no pierdan de vista los datos que ya tenían con el nombre viejo
+async function migrarColumnasRenombradas(categoriaId, renombres) {
+  if (!renombres || !renombres.length) return;
+  const { data: filas, error } = await supabaseClient
+    .from("elcoya_items_filas")
+    .select("id, valores")
+    .eq("categoria_id", categoriaId);
+  if (error || !filas) return;
+  for (const fila of filas) {
+    const valores = { ...(fila.valores || {}) };
+    let cambio = false;
+    renombres.forEach(({ de, a }) => {
+      if (Object.prototype.hasOwnProperty.call(valores, de) && de !== a) {
+        valores[a] = valores[de];
+        delete valores[de];
+        cambio = true;
+      }
+    });
+    if (cambio) {
+      await supabaseClient.from("elcoya_items_filas").update({ valores }).eq("id", fila.id);
+    }
+  }
+}
+
+// permite renombrar una columna tocando directo su encabezado en la tabla,
+// sin tener que abrir el panel ⚙ de configuración del tipo
+async function renombrarColumnaDesdeTabla(categoriaId, nombreActual) {
+  const nuevoNombre = await confirmarAccion(
+    "¿Cómo querés que se llame esta columna?",
+    "Renombrar",
+    "Cancelar",
+    { pedirTexto: true, valorInicial: nombreActual, placeholder: "Nombre de la columna" }
+  );
+  if (!nuevoNombre || nuevoNombre === nombreActual) return;
+  if (esCampoFijo(nuevoNombre)) {
+    mostrarError(`"${nuevoNombre}" ya es una columna fija, no se puede usar ese nombre.`);
+    return;
+  }
+
+  const categoria = state.itemsCategorias.find((c) => c.id === categoriaId);
+  if (!categoria) return;
+  const columnas = (categoria.columnas || []).map((c) => ({ ...c }));
+  const idx = columnas.findIndex((c) => c.nombre === nombreActual);
+  if (idx === -1) return;
+  if (columnas.some((c, i) => i !== idx && normalizar(c.nombre) === normalizar(nuevoNombre))) {
+    mostrarError(`Ya existe una columna llamada "${nuevoNombre}" en este tipo.`);
+    return;
+  }
+  columnas[idx] = { ...columnas[idx], nombre: nuevoNombre };
+
+  const { error } = await supabaseClient.from("elcoya_items_categorias").update({ columnas }).eq("id", categoriaId);
+  if (error) {
+    mostrarError("No se pudo renombrar la columna: " + error.message);
+    return;
+  }
+  await migrarColumnasRenombradas(categoriaId, [{ de: nombreActual, a: nuevoNombre }]);
+  await cargarItemsCompleto();
+}
 
 // borra una categoría completa (y todas sus filas); es la misma tabla en Productos y Pedidos, así que borra de los dos lados
 async function borrarCategoriaCompleta(categoriaId, panelIdACerrar) {
@@ -3460,12 +3579,18 @@ $("#formCategoriaProducto").addEventListener("submit", async (e) => {
   const nombre = form.nombre.value.trim();
   if (!nombre) return mostrarError("Falta el nombre de la categoría.");
 
-  const payload = { nombre, columnas: state.columnasTemp };
+  const columnasLimpias = state.columnasTemp.map(({ nombre, producto, pedido }) => ({ nombre, producto, pedido }));
+  const payload = { nombre, columnas: columnasLimpias };
 
   const { data: catGuardada, error } = editId
     ? await supabaseClient.from("elcoya_items_categorias").update(payload).eq("id", editId).select().single()
     : await supabaseClient.from("elcoya_items_categorias").insert(payload).select().single();
   if (error) return mostrarError("No se pudo guardar la categoría: " + error.message);
+
+  if (editId && state.columnasRenombradas && state.columnasRenombradas.length) {
+    await migrarColumnasRenombradas(editId, state.columnasRenombradas);
+  }
+  state.columnasRenombradas = [];
 
   form.reset();
   prepararFormularioCategoria(null, "producto");
@@ -3482,6 +3607,12 @@ $("#formCategoriaProducto").addEventListener("submit", async (e) => {
 
 // ---------- productos: clicks dentro de cada bloque de categoría ----------
 $("#listaCategoriasProductos").addEventListener("click", async (e) => {
+  const thEditable = e.target.closest(".th-editable-col");
+  if (thEditable) {
+    renombrarColumnaDesdeTabla(thEditable.dataset.catId, thEditable.dataset.col);
+    return;
+  }
+
   const btnConfig = e.target.closest(".btn-config-categoria-producto");
   if (btnConfig) {
     const categoria = state.itemsCategorias.find((c) => c.id === btnConfig.dataset.categoria);
