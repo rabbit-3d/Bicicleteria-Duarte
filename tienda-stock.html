@@ -487,6 +487,18 @@
     font-size:16px; background:var(--paper-2); color:var(--ink); font-family:inherit;
   }
   .field-hint{ font-size:12px; color:var(--ink-soft); margin-top:4px; }
+
+  /* ---------- editor de recorte/zoom de fotos ---------- */
+  .recorte-viewport{
+    position:relative; width:100%; aspect-ratio:4/3; overflow:hidden;
+    border-radius:12px; border:1px solid var(--line); background:#000;
+    touch-action:none; cursor:grab; user-select:none;
+  }
+  .recorte-viewport.arrastrando{ cursor:grabbing; }
+  .recorte-viewport img{
+    position:absolute; left:0; top:0; max-width:none; will-change:transform;
+    pointer-events:none;
+  }
   .field-row{ display:flex; gap:10px; }
   .field-row .field{ flex:1; }
   .msg{ border-radius:10px; padding:11px 14px; font-size:13.5px; margin-bottom:14px; font-weight:600; }
@@ -500,6 +512,7 @@
     position:absolute; top:2px; right:2px; background:rgba(38,32,25,.75); color:#fff;
     border:none; border-radius:100px; width:20px; height:20px; font-size:13px; line-height:1;
   }
+  .foto-admin-item .foto-admin-editar{ right:auto; left:2px; font-size:11px; }
   .foto-admin-add{
     width:78px; height:78px; border-radius:9px; border:2px dashed var(--line);
     display:flex; align-items:center; justify-content:center; color:var(--ink-soft); font-size:26px;
@@ -1012,6 +1025,36 @@
   </div>
 </div>
 
+<!-- ============ MODAL: acomodar/recortar foto (zoom + arrastrar) ============ -->
+<div class="modal-backdrop" id="modalRecorteFoto">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-head">
+      <h2>Acomodá la foto</h2>
+      <button class="modal-close" onclick="cancelarRecorte()" aria-label="Cerrar">✕</button>
+    </div>
+    <p class="field-hint" style="margin-bottom:12px;">Arrastrá la foto para moverla, y usá la barra para acercar o alejar.</p>
+    <div class="recorte-viewport" id="recorteViewport">
+      <img id="recorteImg" src="" alt="" draggable="false">
+    </div>
+    <div class="field" style="margin-top:16px; display:flex; align-items:center; gap:10px;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0; color:var(--ink-soft);"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <input type="range" id="recorteZoom" min="0" max="100" value="0" style="flex:1;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0; color:var(--ink-soft);"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/><path d="M8 11h6M11 8v6"/></svg>
+    </div>
+    <div class="field" style="margin-top:4px;">
+      <label>Si sobra espacio, rellenar con:</label>
+      <div class="condicion-toggle" id="recorteFondoToggle">
+        <button type="button" data-fondo="blanco" class="active">⬜ Blanco</button>
+        <button type="button" data-fondo="negro">⬛ Negro</button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-ghost" onclick="cancelarRecorte()">Omitir esta foto</button>
+      <button type="button" class="btn btn-primary" onclick="confirmarRecorte()">Usar esta foto</button>
+    </div>
+  </div>
+</div>
+
 <!-- ============ MODAL: agregar/editar pregunta frecuente ============ -->
 <div class="modal-backdrop" id="modalFormFaq">
   <div class="modal" style="max-width:500px;">
@@ -1389,6 +1432,7 @@ function renderTallerAdminGrid() {
       (f) => `
       <div class="foto-admin-item">
         <img src="${esc(f.url)}" alt="">
+        <button type="button" class="foto-admin-editar" onclick="editarFotoTaller('${f.id}', '${esc(f.url)}')" aria-label="Editar foto" title="Acomodar/recortar">✎</button>
         <button type="button" onclick="borrarFotoTaller('${f.id}')" aria-label="Quitar foto">✕</button>
       </div>`
     )
@@ -1436,12 +1480,201 @@ function comprimirImagen(file, maxLado = 1400, calidad = 0.75) {
   });
 }
 
+/* =========================================================
+   EDITOR DE RECORTE/ZOOM: acomodar la foto dentro del recuadro
+   antes de subirla (arrastrar para mover, barra para hacer zoom)
+   ========================================================= */
+const recorteState = {
+  img: null, url: null, archivoOriginal: null, resolve: null,
+  scale: 1, minScale: 1, maxScale: 1, offsetX: 0, offsetY: 0,
+  viewportW: 0, viewportH: 0, fondo: "blanco",
+  arrastrando: false, inicioX: 0, inicioY: 0, inicioOffX: 0, inicioOffY: 0,
+};
+
+function abrirRecorteFoto(file) {
+  return new Promise((resolve) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      recorteState.img = img;
+      recorteState.url = url;
+      recorteState.archivoOriginal = file;
+      recorteState.resolve = resolve;
+      $("#recorteImg").src = url;
+      setFondoRecorte("blanco");
+      abrirModal("modalRecorteFoto");
+      requestAnimationFrame(() => {
+        const viewport = $("#recorteViewport");
+        const rect = viewport.getBoundingClientRect();
+        recorteState.viewportW = rect.width || 300;
+        recorteState.viewportH = rect.height || 225;
+        inicializarEscalasRecorte(img);
+        recorteState.offsetX = 0;
+        recorteState.offsetY = 0;
+        renderRecorte();
+      });
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(null); };
+    img.src = url;
+  });
+}
+
+// igual que abrirRecorteFoto, pero para volver a editar una foto que ya está subida
+// (en vez de partir de un archivo elegido en el momento)
+function abrirRecorteDesdeUrl(url, nombreSugerido) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      recorteState.img = img;
+      recorteState.url = null; // no es un blob nuestro, no hay que revocarlo al cerrar
+      recorteState.archivoOriginal = { name: nombreSugerido || "foto.jpg" };
+      recorteState.resolve = resolve;
+      $("#recorteImg").src = url;
+      setFondoRecorte("blanco");
+      abrirModal("modalRecorteFoto");
+      requestAnimationFrame(() => {
+        const viewport = $("#recorteViewport");
+        const rect = viewport.getBoundingClientRect();
+        recorteState.viewportW = rect.width || 300;
+        recorteState.viewportH = rect.height || 225;
+        inicializarEscalasRecorte(img);
+        recorteState.offsetX = 0;
+        recorteState.offsetY = 0;
+        renderRecorte();
+      });
+    };
+    img.onerror = () => resolve(null);
+    img.src = url;
+  });
+}
+
+// mínimo = se ve la foto completa (puede sobrar espacio, se rellena con el fondo elegido)
+// máximo = bastante más acercado que "llenar todo el recuadro"
+// arranca llenando el recuadro (como antes), pero ahora se puede alejar más si se quiere
+function inicializarEscalasRecorte(img) {
+  const { viewportW, viewportH } = recorteState;
+  const escalaContiene = Math.min(viewportW / img.width, viewportH / img.height);
+  const escalaCubre = Math.max(viewportW / img.width, viewportH / img.height);
+  recorteState.minScale = escalaContiene;
+  recorteState.maxScale = escalaCubre * 3.5;
+  recorteState.scale = escalaCubre;
+  const t = (recorteState.scale - recorteState.minScale) / (recorteState.maxScale - recorteState.minScale);
+  $("#recorteZoom").value = Math.round(t * 100);
+}
+
+function setFondoRecorte(fondo) {
+  recorteState.fondo = fondo;
+  $("#recorteViewport").style.background = fondo === "negro" ? "#000" : "#fff";
+  $$("#recorteFondoToggle button").forEach((b) => b.classList.toggle("active", b.dataset.fondo === fondo));
+}
+$("#recorteFondoToggle").addEventListener("click", (e) => {
+  const btn = e.target.closest("button[data-fondo]");
+  if (btn) setFondoRecorte(btn.dataset.fondo);
+});
+
+function renderRecorte() {
+  const { img, scale, offsetX, offsetY, viewportW, viewportH } = recorteState;
+  if (!img) return;
+  const w = img.width * scale;
+  const h = img.height * scale;
+  const left = viewportW / 2 - w / 2 + offsetX;
+  const top = viewportH / 2 - h / 2 + offsetY;
+  const el = $("#recorteImg");
+  el.style.width = w + "px";
+  el.style.height = h + "px";
+  el.style.transform = `translate(${left}px, ${top}px)`;
+}
+
+function clampOffsetsRecorte() {
+  const { img, scale, viewportW, viewportH } = recorteState;
+  const maxOffX = Math.max(0, (img.width * scale - viewportW) / 2);
+  const maxOffY = Math.max(0, (img.height * scale - viewportH) / 2);
+  recorteState.offsetX = Math.min(maxOffX, Math.max(-maxOffX, recorteState.offsetX));
+  recorteState.offsetY = Math.min(maxOffY, Math.max(-maxOffY, recorteState.offsetY));
+}
+
+const recorteViewportEl = $("#recorteViewport");
+recorteViewportEl.addEventListener("pointerdown", (e) => {
+  if (!recorteState.img) return;
+  recorteState.arrastrando = true;
+  recorteViewportEl.classList.add("arrastrando");
+  recorteViewportEl.setPointerCapture(e.pointerId);
+  recorteState.inicioX = e.clientX;
+  recorteState.inicioY = e.clientY;
+  recorteState.inicioOffX = recorteState.offsetX;
+  recorteState.inicioOffY = recorteState.offsetY;
+});
+recorteViewportEl.addEventListener("pointermove", (e) => {
+  if (!recorteState.arrastrando) return;
+  recorteState.offsetX = recorteState.inicioOffX + (e.clientX - recorteState.inicioX);
+  recorteState.offsetY = recorteState.inicioOffY + (e.clientY - recorteState.inicioY);
+  clampOffsetsRecorte();
+  renderRecorte();
+});
+function terminarArrastreRecorte() {
+  recorteState.arrastrando = false;
+  recorteViewportEl.classList.remove("arrastrando");
+}
+recorteViewportEl.addEventListener("pointerup", terminarArrastreRecorte);
+recorteViewportEl.addEventListener("pointercancel", terminarArrastreRecorte);
+
+$("#recorteZoom").addEventListener("input", (e) => {
+  if (!recorteState.img) return;
+  const t = Number(e.target.value) / 100; // 0 a 1
+  recorteState.scale = recorteState.minScale + t * (recorteState.maxScale - recorteState.minScale);
+  clampOffsetsRecorte();
+  renderRecorte();
+});
+
+function cancelarRecorte() {
+  if (recorteState.url) URL.revokeObjectURL(recorteState.url);
+  const resolve = recorteState.resolve;
+  recorteState.img = null;
+  recorteState.resolve = null;
+  cerrarModal("modalRecorteFoto");
+  if (resolve) resolve(null);
+}
+
+function confirmarRecorte() {
+  const { img, scale, offsetX, offsetY, viewportW, viewportH, archivoOriginal, resolve, url, fondo } = recorteState;
+  if (!img) return;
+  const outputW = 900;
+  const outputH = Math.round(outputW * (viewportH / viewportW));
+  const ratio = outputW / viewportW;
+  const canvas = document.createElement("canvas");
+  canvas.width = outputW;
+  canvas.height = outputH;
+  const ctx = canvas.getContext("2d");
+  ctx.fillStyle = fondo === "negro" ? "#000000" : "#ffffff";
+  ctx.fillRect(0, 0, outputW, outputH);
+  const drawW = img.width * scale * ratio;
+  const drawH = img.height * scale * ratio;
+  const drawX = outputW / 2 - drawW / 2 + offsetX * ratio;
+  const drawY = outputH / 2 - drawH / 2 + offsetY * ratio;
+  ctx.drawImage(img, drawX, drawY, drawW, drawH);
+  canvas.toBlob(
+    (blob) => {
+      URL.revokeObjectURL(url);
+      recorteState.img = null;
+      cerrarModal("modalRecorteFoto");
+      if (!blob) { resolve(archivoOriginal); return; }
+      const nombreJpg = archivoOriginal.name.replace(/\.[^.]+$/, "") + ".jpg";
+      resolve(new File([blob], nombreJpg, { type: "image/jpeg" }));
+    },
+    "image/jpeg",
+    0.9
+  );
+}
+
 async function subirFotosTaller(e) {
   const archivos = Array.from(e.target.files || []);
   if (!archivos.length) return;
-  $("#tallerSubiendoTexto").textContent = "Comprimiendo y subiendo foto" + (archivos.length > 1 ? "s" : "") + "...";
   for (const archivoOriginal of archivos) {
-    const archivo = await comprimirImagen(archivoOriginal);
+    const archivoRecortado = await abrirRecorteFoto(archivoOriginal);
+    if (!archivoRecortado) continue; // el usuario omitió esta foto
+    $("#tallerSubiendoTexto").textContent = "Comprimiendo y subiendo foto...";
+    const archivo = await comprimirImagen(archivoRecortado);
     const nombreLimpio = archivo.name.replace(/[^a-zA-Z0-9.]/g, "_");
     const path = `taller/${Date.now()}-${Math.random().toString(36).slice(2, 7)}-${nombreLimpio}`;
     const { error } = await supabaseClient.storage.from("stock-venta").upload(path, archivo);
@@ -1452,9 +1685,9 @@ async function subirFotosTaller(e) {
     }
     const { data } = supabaseClient.storage.from("stock-venta").getPublicUrl(path);
     await supabaseClient.from("elcoya_stock_taller_fotos").insert({ url: data.publicUrl, orden: state.tallerFotos.length });
+    await cargarTallerFotos();
   }
   $("#tallerSubiendoTexto").textContent = "";
-  await cargarTallerFotos();
 }
 
 function borrarFotoTaller(id) {
@@ -1467,6 +1700,25 @@ function borrarFotoTaller(id) {
       if (error) { alert("No se pudo borrar: " + error.message); return; }
       cargarTallerFotos();
     });
+}
+
+async function editarFotoTaller(id, urlActual) {
+  const archivoRecortado = await abrirRecorteDesdeUrl(urlActual, "foto.jpg");
+  if (!archivoRecortado) return; // canceló
+  $("#tallerSubiendoTexto").textContent = "Comprimiendo y subiendo foto...";
+  const archivo = await comprimirImagen(archivoRecortado);
+  const nombreLimpio = archivo.name.replace(/[^a-zA-Z0-9.]/g, "_");
+  const path = `taller/${Date.now()}-${Math.random().toString(36).slice(2, 7)}-${nombreLimpio}`;
+  const { error } = await supabaseClient.storage.from("stock-venta").upload(path, archivo);
+  if (error) {
+    $("#tallerSubiendoTexto").textContent = "";
+    alert("No se pudo guardar el recorte: " + error.message);
+    return;
+  }
+  const { data } = supabaseClient.storage.from("stock-venta").getPublicUrl(path);
+  await supabaseClient.from("elcoya_stock_taller_fotos").update({ url: data.publicUrl }).eq("id", id);
+  $("#tallerSubiendoTexto").textContent = "";
+  await cargarTallerFotos();
 }
 
 /* =========================================================
@@ -2154,6 +2406,7 @@ function renderFotosAdminGridBici() {
       (url, idx) => `
       <div class="foto-admin-item">
         <img src="${esc(url)}" alt="">
+        <button type="button" class="foto-admin-editar" onclick="editarFotoFormBici(${idx})" aria-label="Editar foto" title="Acomodar/recortar">✎</button>
         <button type="button" onclick="quitarFotoFormBici(${idx})" aria-label="Quitar foto">✕</button>
       </div>`
     )
@@ -2169,13 +2422,33 @@ function quitarFotoFormBici(idx) {
   state.fotosFormBiciTemp.splice(idx, 1);
   renderFotosAdminGridBici();
 }
+async function editarFotoFormBici(idx) {
+  const urlActual = state.fotosFormBiciTemp[idx];
+  const archivoRecortado = await abrirRecorteDesdeUrl(urlActual, "foto.jpg");
+  if (!archivoRecortado) return; // canceló
+  $("#fotosSubiendoTextoBici").textContent = "Comprimiendo y subiendo foto...";
+  const archivo = await comprimirImagen(archivoRecortado);
+  const nombreLimpio = archivo.name.replace(/[^a-zA-Z0-9.]/g, "_");
+  const path = `bicicletas/${Date.now()}-${Math.random().toString(36).slice(2, 7)}-${nombreLimpio}`;
+  const { error } = await supabaseClient.storage.from("stock-venta").upload(path, archivo);
+  $("#fotosSubiendoTextoBici").textContent = "";
+  if (error) {
+    $("#msgFormBici").innerHTML = `<div class="msg msg-error">No se pudo guardar el recorte: ${esc(error.message)}</div>`;
+    return;
+  }
+  const { data } = supabaseClient.storage.from("stock-venta").getPublicUrl(path);
+  state.fotosFormBiciTemp[idx] = data.publicUrl;
+  renderFotosAdminGridBici();
+}
 
 async function subirFotosBici(e) {
   const archivos = Array.from(e.target.files || []);
   if (!archivos.length) return;
-  $("#fotosSubiendoTextoBici").textContent = "Comprimiendo y subiendo foto" + (archivos.length > 1 ? "s" : "") + "...";
   for (const archivoOriginal of archivos) {
-    const archivo = await comprimirImagen(archivoOriginal);
+    const archivoRecortado = await abrirRecorteFoto(archivoOriginal);
+    if (!archivoRecortado) continue; // el usuario omitió esta foto
+    $("#fotosSubiendoTextoBici").textContent = "Comprimiendo y subiendo foto...";
+    const archivo = await comprimirImagen(archivoRecortado);
     const nombreLimpio = archivo.name.replace(/[^a-zA-Z0-9.]/g, "_");
     const path = `bicicletas/${Date.now()}-${Math.random().toString(36).slice(2, 7)}-${nombreLimpio}`;
     const { error } = await supabaseClient.storage.from("stock-venta").upload(path, archivo);
@@ -2186,9 +2459,9 @@ async function subirFotosBici(e) {
     }
     const { data } = supabaseClient.storage.from("stock-venta").getPublicUrl(path);
     state.fotosFormBiciTemp.push(data.publicUrl);
+    renderFotosAdminGridBici();
   }
   $("#fotosSubiendoTextoBici").textContent = "";
-  renderFotosAdminGridBici();
 }
 
 function borrarBicicleta(id) {
@@ -2295,6 +2568,7 @@ function renderFotosAdminGrid() {
       (url, idx) => `
       <div class="foto-admin-item">
         <img src="${esc(url)}" alt="">
+        <button type="button" class="foto-admin-editar" onclick="editarFotoForm(${idx})" aria-label="Editar foto" title="Acomodar/recortar">✎</button>
         <button type="button" onclick="quitarFotoForm(${idx})" aria-label="Quitar foto">✕</button>
       </div>`
     )
@@ -2310,13 +2584,33 @@ function quitarFotoForm(idx) {
   state.fotosFormTemp.splice(idx, 1);
   renderFotosAdminGrid();
 }
+async function editarFotoForm(idx) {
+  const urlActual = state.fotosFormTemp[idx];
+  const archivoRecortado = await abrirRecorteDesdeUrl(urlActual, "foto.jpg");
+  if (!archivoRecortado) return; // canceló
+  $("#fotosSubiendoTexto").textContent = "Comprimiendo y subiendo foto...";
+  const archivo = await comprimirImagen(archivoRecortado);
+  const nombreLimpio = archivo.name.replace(/[^a-zA-Z0-9.]/g, "_");
+  const path = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}-${nombreLimpio}`;
+  const { error } = await supabaseClient.storage.from("stock-venta").upload(path, archivo);
+  $("#fotosSubiendoTexto").textContent = "";
+  if (error) {
+    $("#msgForm").innerHTML = `<div class="msg msg-error">No se pudo guardar el recorte: ${esc(error.message)}</div>`;
+    return;
+  }
+  const { data } = supabaseClient.storage.from("stock-venta").getPublicUrl(path);
+  state.fotosFormTemp[idx] = data.publicUrl;
+  renderFotosAdminGrid();
+}
 
 async function subirFotos(e) {
   const archivos = Array.from(e.target.files || []);
   if (!archivos.length) return;
-  $("#fotosSubiendoTexto").textContent = "Comprimiendo y subiendo foto" + (archivos.length > 1 ? "s" : "") + "...";
   for (const archivoOriginal of archivos) {
-    const archivo = await comprimirImagen(archivoOriginal);
+    const archivoRecortado = await abrirRecorteFoto(archivoOriginal);
+    if (!archivoRecortado) continue; // el usuario omitió esta foto
+    $("#fotosSubiendoTexto").textContent = "Comprimiendo y subiendo foto...";
+    const archivo = await comprimirImagen(archivoRecortado);
     const nombreLimpio = archivo.name.replace(/[^a-zA-Z0-9.]/g, "_");
     const path = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}-${nombreLimpio}`;
     const { error } = await supabaseClient.storage.from("stock-venta").upload(path, archivo);
@@ -2327,9 +2621,9 @@ async function subirFotos(e) {
     }
     const { data } = supabaseClient.storage.from("stock-venta").getPublicUrl(path);
     state.fotosFormTemp.push(data.publicUrl);
+    renderFotosAdminGrid();
   }
   $("#fotosSubiendoTexto").textContent = "";
-  renderFotosAdminGrid();
 }
 
 $("#formBici").addEventListener("submit", async (e) => {
